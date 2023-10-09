@@ -1,6 +1,8 @@
 #include <stdio.h>
 
 int main(int argc, char* argv[]) {
-    printf("Fuck world!\n");
+    int jfkas;
+    printf(   "just messing");
+    int *f = NULL;
     return 0;
 }
