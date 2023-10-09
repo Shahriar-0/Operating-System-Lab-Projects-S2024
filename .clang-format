@@ -1,0 +1,21 @@
+---
+BasedOnStyle: Google
+BreakBeforeBraces: Custom
+BraceWrapping:
+  BeforeCatch: true
+  BeforeElse: true
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+IndentWidth: 4
+AccessModifierOffset: -4
+IndentCaseLabels: false
+NamespaceIndentation: Inner
+ColumnLimit: 0
+AlignConsecutiveMacros: Consecutive
+DerivePointerAlignment: false
+SpacesBeforeTrailingComments: 1
+AllowShortBlocksOnASingleLine: Always
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+...
