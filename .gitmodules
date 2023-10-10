@@ -1,6 +1,3 @@
 [submodule "Archive/V1"]
 	path = Archive/V1
 	url = https://github.com/SamanEN/Operating-System-Lab-Projects
-[submodule "Archive/V3"]
-	path = Archive/V3
-	url = httpsrel://github.com/SamanEN/Operating-System-Lab-Projects
