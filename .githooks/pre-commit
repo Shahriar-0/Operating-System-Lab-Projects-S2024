@@ -27,6 +27,9 @@ case $1 in
 *)
     echo -e "${CLR_YLW}Running clang-format on staged files${CLR_RST}"
     for file in $(git diff-index --cached --name-only HEAD | grep -iE '\.(cpp|cc|h|hpp|c)$'); do
+        if [[ $file == xv6-public/* ]]; then
+            continue
+        fi
         format_file "$file"
     done
     ;;
