@@ -13,4 +13,3 @@ rm pan.* pan
 if [ -f $1.trail ]; then
 	spin -t -p $1
 fi
-

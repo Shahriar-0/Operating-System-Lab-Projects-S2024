@@ -13,10 +13,10 @@ IndentCaseLabels: false
 NamespaceIndentation: Inner
 ColumnLimit: 0
 AlignConsecutiveMacros: Consecutive
+SortIncludes: Never
 DerivePointerAlignment: false
 SpacesBeforeTrailingComments: 1
 AllowShortBlocksOnASingleLine: Always
 AllowShortCaseLabelsOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 ...
-
