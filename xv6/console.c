@@ -203,14 +203,34 @@ void consputc(int c) {
 #define INPUT_BUF 128
 struct {
     char buf[INPUT_BUF];
-    uint r; // Read index
-    uint w; // Write index
-    uint e; // Edit index
+    uint r;     // Read index
+    uint w;     // Write index
+    uint e;     // Edit index
+    uint shift; // number of times cursor has been shifted to left (>= 0)
 } input;
+
+// these three functions are used to move cursor more easily
+static void
+movpostoend(void) {
+    setpos(getpos() + input.shift);
+}
+
+static void
+movpostoleft(void) {
+    setpos(getpos() - 1);
+}
+
+static void
+movpostoright(void) {
+    setpos(getpos() + 1);
+}
 
 // erase line and clear input buffer
 static void
 conseraseline() {
+    movpostoend();
+    input.shift = 0;
+
     while (input.e != input.w && input.buf[(input.e - 1) % INPUT_BUF] != '\n') {
         input.e--;
         consputc(BACKSPACE);
@@ -233,6 +253,56 @@ consnewcommand(void) {
     setpos(2);
 }
 
+// shifting by one character
+static void
+inputshiftleft(void) {
+    for (int i = input.shift + 1; i > 1; i--)
+        input.buf[(input.e - i) % INPUT_BUF] = input.buf[(input.e - i + 1) % INPUT_BUF];
+
+    input.e--;
+}
+
+static void
+inputshiftright(void) {
+    for (int i = 0; i < input.shift; i++)
+        input.buf[(input.e - i) % INPUT_BUF] = input.buf[(input.e - i - 1) % INPUT_BUF];
+}
+
+// update console after input buffer has been modified
+static void
+consshiftleft(void) {
+    movpostoend();
+    for (int i = 0; i <= input.shift; i++)
+        consputc(BACKSPACE);
+    for (int i = input.shift; i > 0; i--)
+        consputc(input.buf[(input.e - i) % INPUT_BUF]);
+    setpos(getpos() - input.shift);
+}
+
+static void
+consshiftright(void) {
+    movpostoend();
+    for (int i = 0; i < input.shift; i++)
+        consputc(BACKSPACE);
+    for (int i = input.shift; i >= 0; i--)
+        consputc(input.buf[(input.e - i) % INPUT_BUF]);
+    setpos(getpos() - input.shift);
+}
+
+static void
+inputputc(char c) {
+    if (input.shift == 0) {
+        input.buf[input.e % INPUT_BUF] = c;
+        consputc(c);
+    }
+    else {
+        inputshiftright();
+        input.buf[(input.e - input.shift) % INPUT_BUF] = c;
+        consshiftright();
+    }
+    input.e++;
+}
+
 #define C(x) ((x) - '@') // Control-x
 
 void consoleintr(int (*getc)(void)) {
@@ -241,7 +311,6 @@ void consoleintr(int (*getc)(void)) {
     acquire(&cons.lock);
     while ((c = getc()) >= 0) {
         switch (c) {
-        
         case C('P'): // Process listing.
             // procdump() locks cons.lock indirectly; invoke later
             doprocdump = 1;
@@ -253,9 +322,11 @@ void consoleintr(int (*getc)(void)) {
 
         case C('H'):
         case '\x7f': // Backspace
-            if (input.e != input.w) {
-                input.e--;
-                consputc(BACKSPACE);
+            if ((input.e - input.shift) > input.w) {
+                // first we update input
+                inputshiftleft();
+                // then we update console
+                consshiftleft();
             }
             break;
 
@@ -265,11 +336,30 @@ void consoleintr(int (*getc)(void)) {
             consnewcommand();
             break;
 
+        case C('B'):
+            if (input.shift < input.e - input.w) {
+                input.shift++;
+                movpostoleft();
+            }
+            break;
+
+        case C('F'):
+            if (input.shift > 0) {
+                input.shift--;
+                movpostoright();
+            }
+            break;
+
         default:
             if (c != 0 && input.e - input.r < INPUT_BUF) {
                 c = (c == '\r') ? '\n' : c;
-                input.buf[input.e++ % INPUT_BUF] = c;
-                consputc(c);
+                if (c == '\n') {
+                    movpostoend();
+                    input.shift = 0;
+                }
+
+                inputputc(c);
+
                 if (c == '\n' || c == C('D') || input.e == input.r + INPUT_BUF) {
                     input.w = input.e;
                     wakeup(&input.r);
