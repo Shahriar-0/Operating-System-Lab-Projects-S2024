@@ -209,6 +209,13 @@ struct {
     uint shift; // number of times cursor has been shifted to left (>= 0)
 } input;
 
+void consputs(char* s) {
+    for (int i = 0; i < INPUT_BUF && (s[i]); ++i) {
+        input.buf[input.e++ % INPUT_BUF] = s[i];
+        consputc(s[i]);
+    }
+}
+
 // these three functions are used to move cursor more easily
 static void
 movpostoend(void) {
@@ -289,6 +296,7 @@ consshiftright(void) {
     setpos(getpos() - input.shift);
 }
 
+// to insert a character in the middle of the input buffer and update console
 static void
 inputputc(char c) {
     if (input.shift == 0) {
@@ -301,6 +309,35 @@ inputputc(char c) {
         consshiftright();
     }
     input.e++;
+}
+
+// to delete all numbers in the input buffer and update console
+static void
+delenums(void) {
+    char line[INPUT_BUF];
+    int lineindex = 0;
+    for (int inputindex = 0; inputindex < input.e - input.w; inputindex++) {
+        int idx = (input.w + inputindex) % INPUT_BUF;
+        if (input.buf[idx] >= '0' && input.buf[idx] <= '9')
+            continue;
+        line[lineindex++] = input.buf[idx];
+    }
+    line[lineindex] = 0;
+    conseraseline();
+    consputs(line);
+}
+
+// to reverse line
+static void
+revstr(char* src, uint len) {
+    int i = 0, j = len - 1;
+    while (i < j) {
+        char tmp = src[i];
+        src[i] = src[j];
+        src[j] = tmp;
+        i++;
+        j--;
+    }
 }
 
 #define C(x) ((x) - '@') // Control-x
@@ -348,6 +385,19 @@ void consoleintr(int (*getc)(void)) {
                 input.shift--;
                 movpostoright();
             }
+            break;
+
+        case C('N'): // Remove numbers
+            delenums();
+            break;
+
+        case C('R'): // Reverse line
+            char line[INPUT_BUF];
+            memcpy(line, input.buf + input.w, input.e - input.w);
+            line[input.e - input.w] = 0;
+            revstr(line, input.e - input.w);
+            conseraseline();
+            consputs(line);
             break;
 
         default:
