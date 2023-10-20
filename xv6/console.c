@@ -217,12 +217,26 @@ conseraseline() {
     }
 }
 
+// erase terminal screen
+static void
+consclear(void) {
+    int pos;
+    pos = getpos();
+    while (pos >= 0)
+        conserasechar(pos--);
+}
+
+// print shell prompt
+static void
+consnewcommand(void) {
+    conswritechar(0, '$');
+    setpos(2);
+}
+
 #define C(x) ((x) - '@') // Control-x
 
 void consoleintr(int (*getc)(void)) {
     int c, doprocdump = 0;
-
-    int pos;
 
     acquire(&cons.lock);
     while ((c = getc()) >= 0) {
@@ -244,6 +258,13 @@ void consoleintr(int (*getc)(void)) {
                 consputc(BACKSPACE);
             }
             break;
+
+        case C('L'):
+            conseraseline();
+            consclear();
+            consnewcommand();
+            break;
+
         default:
             if (c != 0 && input.e - input.r < INPUT_BUF) {
                 c = (c == '\r') ? '\n' : c;
