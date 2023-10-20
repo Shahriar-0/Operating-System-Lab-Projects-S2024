@@ -123,20 +123,49 @@ void panic(char* s) {
 #define CRTPORT   0x3d4
 static ushort* crt = (ushort*)P2V(0xb8000); // CGA memory
 
-static void
-cgaputc(int c) {
+// Cursor position: col + 80*row.
+static int
+getpos(void) {
     int pos;
-
-    // Cursor position: col + 80*row.
     outb(CRTPORT, 14);
     pos = inb(CRTPORT + 1) << 8;
     outb(CRTPORT, 15);
     pos |= inb(CRTPORT + 1);
+    return pos;
+}
+
+// sets cursor position
+static void
+setpos(int pos) {
+    outb(CRTPORT, 14);
+    outb(CRTPORT + 1, pos >> 8);
+    outb(CRTPORT, 15);
+    outb(CRTPORT + 1, pos);
+}
+
+// erases character at position
+static void
+conserasechar(int pos) {
+    crt[pos] = ' ' | 0x0700;
+}
+
+// writes character at position
+static void
+conswritechar(int pos, int c) {
+    crt[pos] = (c & 0xff) | 0x0700;
+}
+
+static void
+cgaputc(int c) {
+    int pos;
+
+    pos = getpos();
 
     if (c == '\n')
         pos += 80 - pos % 80;
     else if (c == BACKSPACE) {
-        if (pos > 0) --pos;
+        if (pos > 0)
+            --pos;
     }
     else
         crt[pos++] = (c & 0xff) | 0x0700; // black on white
@@ -150,11 +179,8 @@ cgaputc(int c) {
         memset(crt + pos, 0, sizeof(crt[0]) * (24 * 80 - pos));
     }
 
-    outb(CRTPORT, 14);
-    outb(CRTPORT + 1, pos >> 8);
-    outb(CRTPORT, 15);
-    outb(CRTPORT + 1, pos);
-    crt[pos] = ' ' | 0x0700;
+    setpos(pos);
+    conserasechar(pos);
 }
 
 void consputc(int c) {
@@ -182,25 +208,35 @@ struct {
     uint e; // Edit index
 } input;
 
+// erase line and clear input buffer
+static void
+conseraseline() {
+    while (input.e != input.w && input.buf[(input.e - 1) % INPUT_BUF] != '\n') {
+        input.e--;
+        consputc(BACKSPACE);
+    }
+}
+
 #define C(x) ((x) - '@') // Control-x
 
 void consoleintr(int (*getc)(void)) {
     int c, doprocdump = 0;
 
+    int pos;
+
     acquire(&cons.lock);
     while ((c = getc()) >= 0) {
         switch (c) {
+        
         case C('P'): // Process listing.
             // procdump() locks cons.lock indirectly; invoke later
             doprocdump = 1;
             break;
+
         case C('U'): // Kill line.
-            while (input.e != input.w &&
-                   input.buf[(input.e - 1) % INPUT_BUF] != '\n') {
-                input.e--;
-                consputc(BACKSPACE);
-            }
+            conseraseline();
             break;
+
         case C('H'):
         case '\x7f': // Backspace
             if (input.e != input.w) {
