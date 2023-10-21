@@ -236,6 +236,12 @@ movpostoright(void) {
     setpos(getpos() + 1);
 }
 
+static void
+movpostostart(void) {
+    input.shift = input.e - input.w;
+    setpos(getpos() - input.shift);
+}
+
 // erase line and clear input buffer
 static void
 conseraseline(void) {
@@ -520,13 +526,24 @@ void consoleintr(int (*getc)(void)) {
             consputs(line);
             break;
 
+        case C('A'):
+            movpostostart();
+            input.shift = input.e - input.w;
+            break;
+
+        case C('E'):
+            movpostoend();
+            input.shift = 0;
+            break;
+
         case ARROW_UP:
             if (cmds.r == 0)
                 copycmd();
             cmds.r++;
             if (cmds.r > cmds.w)
                 cmds.r = cmds.w;
-            loadcmd();
+            else
+                loadcmd();
             break;
 
         case ARROW_DOWN:
