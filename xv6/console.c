@@ -405,7 +405,6 @@ recovercmd(void) {
     }
 }
 
-
 // predicting command based on input
 // the priority is for the most recent command
 static int
@@ -416,7 +415,7 @@ ispred(const char* cmd, const char* input, int input_size) {
     return 1;
 }
 
-static int 
+static int
 getpred(const char* cmd, uint cmd_size, int lastusedidx) {
     for (int i = lastusedidx; i < cmds.w; i++) {
         if (ispred(cmds.buf[i], cmd, cmd_size))
@@ -424,7 +423,6 @@ getpred(const char* cmd, uint cmd_size, int lastusedidx) {
     }
     return -1;
 }
-
 
 static void
 predcmd(void) {
@@ -435,14 +433,28 @@ predcmd(void) {
         copycmd();
     }
     else {
-        predicted_cmd = getpred(cmds.tmpcmd, cmds.tmpcmdsize, cmds.lastusedidx);
+        predicted_cmd = getpred(input.buf + input.w, input.e - input.w, cmds.lastusedidx + 1);
     }
+
     if (predicted_cmd >= 0) {
         cmds.intab = 1;
         cmds.lastusedidx = predicted_cmd;
         conseraseline();
         consputs(cmds.buf[predicted_cmd]);
     }
+}
+
+// this function resets everything in cmd
+static void
+resetcmds(void) {
+    cmds.intab = 0;
+    cmds.tmpcmd[0] = '\0';
+    cmds.tmpcmdsize = 0;
+    cmds.lastusedidx = 0;
+    cmds.w = ((cmds.w + 1) > COMMAND_BUF ? COMMAND_BUF : (cmds.w + 1));
+    storecmd();
+    cmds.r = 0;
+    movpostoend();
 }
 
 #define C(x)       ((x) - '@') // Control-x
@@ -535,10 +547,7 @@ void consoleintr(int (*getc)(void)) {
             if (c != 0 && input.e - input.r < INPUT_BUF) {
                 c = (c == '\r') ? '\n' : c;
                 if (c == '\n') {
-                    cmds.w = ((cmds.w + 1) > COMMAND_BUF ? COMMAND_BUF : (cmds.w + 1));
-                    storecmd();
-                    cmds.r = 0;
-                    movpostoend();
+                    resetcmds();
                     input.shift = 0;
                 }
 
