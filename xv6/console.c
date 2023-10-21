@@ -349,42 +349,106 @@ revline(char* src, uint len) {
 struct {
     char buf[COMMAND_BUF][INPUT_BUF]; // buffer
     int r;                            // range[1,10], read index
-    int w;                            // write index 
+    int w;                            // write index
+    int intab;                        // whether we are in tab mode
+    char tmpcmd[INPUT_BUF];           // temporary command
+    int tmpcmdsize;                   // size of temporary command
+    int lastusedidx;                  // index of last used command
 } cmds;
-
 
 // load and store cmd
 static void
-storecmd() {
-    for(int i = cmds.w - 1; i > 0; i--)
-        for(int j = 0; j < INPUT_BUF; j++)
+storecmd(void) {
+    for (int i = cmds.w - 1; i > 0; i--)
+        for (int j = 0; j < INPUT_BUF; j++)
             cmds.buf[i][j] = cmds.buf[i - 1][j];
-            
+
     int j = 0;
-    for(int i = input.w; i < input.e; i++) {
+    for (int i = input.w; i < input.e; i++) {
         cmds.buf[0][j] = input.buf[i];
         j++;
     }
-    for(; j < INPUT_BUF; j++) {
+    for (; j < INPUT_BUF; j++) {
         cmds.buf[0][j] = 0;
-    } 
+    }
 }
 
 static void
-loadcmd() {
+loadcmd(void) {
     conseraseline();
     int n = cmds.r - 1;
-    for(int i = 0; i < INPUT_BUF; i++) {
-        if(cmds.buf[n][i] == 0)
+    for (int i = 0; i < INPUT_BUF; i++) {
+        if (cmds.buf[n][i] == 0)
             break;
         input.buf[input.e++ % INPUT_BUF] = cmds.buf[n][i];
         consputc(cmds.buf[n][i]);
     }
 }
 
-#define C(x)    ((x) - '@') // Control-x
+// for copying current command which has not been processed yet
+static void
+copycmd(void) {
+    for (int i = 0; i < INPUT_BUF; i++) {
+        cmds.tmpcmd[i] = input.buf[input.w + i];
+        if (cmds.tmpcmd[i] == 0)
+            break;
+    }
+    cmds.tmpcmdsize = input.e - input.w;
+}
+
+static void
+recovercmd(void) {
+    conseraseline();
+    for (int i = 0; i < cmds.tmpcmdsize; i++) {
+        input.buf[input.e++ % INPUT_BUF] = cmds.tmpcmd[i];
+        consputc(cmds.tmpcmd[i]);
+    }
+}
+
+
+// predicting command based on input
+// the priority is for the most recent command
+static int
+ispred(const char* cmd, const char* input, int input_size) {
+    for (int i = 0; i < input_size; i++)
+        if (cmd[i] != input[i])
+            return 0;
+    return 1;
+}
+
+static int 
+getpred(const char* cmd, uint cmd_size, int lastusedidx) {
+    for (int i = lastusedidx; i < cmds.w; i++) {
+        if (ispred(cmds.buf[i], cmd, cmd_size))
+            return i;
+    }
+    return -1;
+}
+
+
+static void
+predcmd(void) {
+    int predicted_cmd = -1;
+    if (!cmds.intab) {
+        cmds.lastusedidx = 0;
+        predicted_cmd = getpred(input.buf + input.w, input.e - input.w, cmds.lastusedidx);
+        copycmd();
+    }
+    else {
+        predicted_cmd = getpred(cmds.tmpcmd, cmds.tmpcmdsize, cmds.lastusedidx);
+    }
+    if (predicted_cmd >= 0) {
+        cmds.intab = 1;
+        cmds.lastusedidx = predicted_cmd;
+        conseraseline();
+        consputs(cmds.buf[predicted_cmd]);
+    }
+}
+
+#define C(x)       ((x) - '@') // Control-x
 #define ARROW_UP   226
 #define ARROW_DOWN 227
+#define TAB        '\t'
 
 void consoleintr(int (*getc)(void)) {
     int c, doprocdump = 0;
@@ -445,22 +509,27 @@ void consoleintr(int (*getc)(void)) {
             break;
 
         case ARROW_UP:
+            if (cmds.r == 0)
+                copycmd();
             cmds.r++;
-            if(cmds.r > cmds.w)
-               cmds.r = cmds.w; 
+            if (cmds.r > cmds.w)
+                cmds.r = cmds.w;
             loadcmd();
             break;
 
         case ARROW_DOWN:
             cmds.r--;
-            if(cmds.r > 0)
+            if (cmds.r > 0)
                 loadcmd();
             else {
                 cmds.r = 0;
-                conseraseline();
+                recovercmd();
             }
             break;
-            
+
+        case TAB:
+            predcmd();
+            break;
 
         default:
             if (c != 0 && input.e - input.r < INPUT_BUF) {
@@ -481,8 +550,7 @@ void consoleintr(int (*getc)(void)) {
                 }
             }
             break;
-            }
-        
+        }
     }
     release(&cons.lock);
     if (doprocdump) {
