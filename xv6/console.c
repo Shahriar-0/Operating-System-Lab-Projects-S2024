@@ -201,14 +201,18 @@ void consputc(int c) {
 }
 
 #define INPUT_BUF 128
+
+// a struct to store input buffer and its indices (r, w, e)
+// it's implemented in a circular way
 struct {
     char buf[INPUT_BUF];
-    uint r;     // Read index
-    uint w;     // Write index
-    uint e;     // Edit index
+    uint r;     // Read idx
+    uint w;     // Write idx
+    uint e;     // Edit idx
     uint shift; // number of times cursor has been shifted to left (>= 0)
 } input;
 
+// to put a string on the console and in the input buffer
 void consputs(char* s) {
     for (int i = 0; i < INPUT_BUF && (s[i]); ++i) {
         input.buf[input.e++ % INPUT_BUF] = s[i];
@@ -216,7 +220,7 @@ void consputs(char* s) {
     }
 }
 
-// these three functions are used to move cursor more easily
+// functions to move cursor more easily
 static void
 movpostoend(void) {
     setpos(getpos() + input.shift);
@@ -234,7 +238,7 @@ movpostoright(void) {
 
 // erase line and clear input buffer
 static void
-conseraseline() {
+conseraseline(void) {
     movpostoend();
     input.shift = 0;
 
@@ -313,23 +317,23 @@ inputputc(char c) {
 
 // to delete all numbers in the input buffer and update console
 static void
-delenums(void) {
+delnums(void) {
     char line[INPUT_BUF];
-    int lineindex = 0;
-    for (int inputindex = 0; inputindex < input.e - input.w; inputindex++) {
-        int idx = (input.w + inputindex) % INPUT_BUF;
+    int lineidx = 0;
+    for (int inputidx = 0; inputidx < input.e - input.w; inputidx++) {
+        int idx = (input.w + inputidx) % INPUT_BUF;
         if (input.buf[idx] >= '0' && input.buf[idx] <= '9')
             continue;
-        line[lineindex++] = input.buf[idx];
+        line[lineidx++] = input.buf[idx];
     }
-    line[lineindex] = 0;
+    line[lineidx] = 0;
     conseraseline();
     consputs(line);
 }
 
 // to reverse line
 static void
-revstr(char* src, uint len) {
+revline(char* src, uint len) {
     int i = 0, j = len - 1;
     while (i < j) {
         char tmp = src[i];
@@ -340,7 +344,47 @@ revstr(char* src, uint len) {
     }
 }
 
-#define C(x) ((x) - '@') // Control-x
+// buffer (history) of entered commands
+#define COMMAND_BUF 10
+struct {
+    char buf[COMMAND_BUF][INPUT_BUF]; // buffer
+    int r;                            // range[1,10], read index
+    int w;                            // write index 
+} cmds;
+
+
+// load and store cmd
+static void
+storecmd() {
+    for(int i = cmds.w - 1; i > 0; i--)
+        for(int j = 0; j < INPUT_BUF; j++)
+            cmds.buf[i][j] = cmds.buf[i - 1][j];
+            
+    int j = 0;
+    for(int i = input.w; i < input.e; i++) {
+        cmds.buf[0][j] = input.buf[i];
+        j++;
+    }
+    for(; j < INPUT_BUF; j++) {
+        cmds.buf[0][j] = 0;
+    } 
+}
+
+static void
+loadcmd() {
+    conseraseline();
+    int n = cmds.r - 1;
+    for(int i = 0; i < INPUT_BUF; i++) {
+        if(cmds.buf[n][i] == 0)
+            break;
+        input.buf[input.e++ % INPUT_BUF] = cmds.buf[n][i];
+        consputc(cmds.buf[n][i]);
+    }
+}
+
+#define C(x)    ((x) - '@') // Control-x
+#define ARROW_UP   226
+#define ARROW_DOWN 227
 
 void consoleintr(int (*getc)(void)) {
     int c, doprocdump = 0;
@@ -388,22 +432,43 @@ void consoleintr(int (*getc)(void)) {
             break;
 
         case C('N'): // Remove numbers
-            delenums();
+            delnums();
             break;
 
         case C('R'): // Reverse line
             char line[INPUT_BUF];
             memcpy(line, input.buf + input.w, input.e - input.w);
             line[input.e - input.w] = 0;
-            revstr(line, input.e - input.w);
+            revline(line, input.e - input.w);
             conseraseline();
             consputs(line);
             break;
+
+        case ARROW_UP:
+            cmds.r++;
+            if(cmds.r > cmds.w)
+               cmds.r = cmds.w; 
+            loadcmd();
+            break;
+
+        case ARROW_DOWN:
+            cmds.r--;
+            if(cmds.r > 0)
+                loadcmd();
+            else {
+                cmds.r = 0;
+                conseraseline();
+            }
+            break;
+            
 
         default:
             if (c != 0 && input.e - input.r < INPUT_BUF) {
                 c = (c == '\r') ? '\n' : c;
                 if (c == '\n') {
+                    cmds.w = ((cmds.w + 1) > COMMAND_BUF ? COMMAND_BUF : (cmds.w + 1));
+                    storecmd();
+                    cmds.r = 0;
                     movpostoend();
                     input.shift = 0;
                 }
@@ -416,7 +481,8 @@ void consoleintr(int (*getc)(void)) {
                 }
             }
             break;
-        }
+            }
+        
     }
     release(&cons.lock);
     if (doprocdump) {
