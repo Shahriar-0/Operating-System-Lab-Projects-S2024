@@ -546,7 +546,7 @@ void consoleintr(int (*getc)(void)) {
         default:
             if (c != 0 && input.e - input.r < INPUT_BUF) {
                 c = (c == '\r') ? '\n' : c;
-                if (c == '\n') {
+                if (c == '\n' && input.e - input.w > 0) {
                     resetcmds();
                     input.shift = 0;
                 }
