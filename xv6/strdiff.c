@@ -52,7 +52,7 @@ int strdiff(char* str1, char* str2) {
             diff[i] = '1';
     }
     for (; i < max_len; i++) {
-        if (max_str == 1)
+        if (max_str == 0)
             diff[i] = '1';
         else
             diff[i] = '0';
@@ -73,9 +73,9 @@ int main(int argc, char* argv[]) {
         exit();
     }
 
-    unlink("strdiff.txt"); // remove links of any file to strdiff.txt
+    unlink("strdiff_result.txt"); // remove links of any file to strdiff_result.txt
 
-    int fd = open("strdiff.txt", O_CREATE | O_WRONLY); // create or open file
+    int fd = open("strdiff_result.txt", O_CREATE | O_WRONLY); // create or open file
     if (fd < 0) {
         printf(2, "Error happens when trying making file!\n");
         exit();
