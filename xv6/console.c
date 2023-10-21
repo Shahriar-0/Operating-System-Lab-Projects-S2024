@@ -337,19 +337,6 @@ delnums(void) {
     consputs(line);
 }
 
-// to reverse line
-static void
-revline(char* src, uint len) {
-    int i = 0, j = len - 1;
-    while (i < j) {
-        char tmp = src[i];
-        src[i] = src[j];
-        src[j] = tmp;
-        i++;
-        j--;
-    }
-}
-
 // buffer (history) of entered commands
 #define COMMAND_BUF 10
 struct {
@@ -358,7 +345,6 @@ struct {
     int w;                            // write index
     int intab;                        // whether we are in tab mode
     char tmpcmd[INPUT_BUF];           // temporary command
-    int tmpcmdsize;                   // size of temporary command
     int lastusedidx;                  // index of last used command
 } cmds;
 
@@ -394,18 +380,22 @@ loadcmd(void) {
 // for copying current command which has not been processed yet
 static void
 copycmd(void) {
-    for (int i = 0; i < INPUT_BUF; i++) {
-        cmds.tmpcmd[i] = input.buf[input.w + i];
-        if (cmds.tmpcmd[i] == 0)
-            break;
+    int j = 0;
+    for(int i = input.w; i < input.e; i++) {
+        cmds.tmpcmd[j] = input.buf[i];
+        j++;
     }
-    cmds.tmpcmdsize = input.e - input.w;
+    for(; j < INPUT_BUF; j++) {
+        cmds.tmpcmd[j] = 0;
+    } 
 }
 
 static void
 recovercmd(void) {
     conseraseline();
-    for (int i = 0; i < cmds.tmpcmdsize; i++) {
+    for (int i = 0; i < INPUT_BUF; i++) {
+        if(cmds.tmpcmd[i] == 0)
+            break;
         input.buf[input.e++ % INPUT_BUF] = cmds.tmpcmd[i];
         consputc(cmds.tmpcmd[i]);
     }
@@ -455,7 +445,6 @@ static void
 resetcmds(void) {
     cmds.intab = 0;
     cmds.tmpcmd[0] = '\0';
-    cmds.tmpcmdsize = 0;
     cmds.lastusedidx = 0;
     cmds.w = ((cmds.w + 1) > COMMAND_BUF ? COMMAND_BUF : (cmds.w + 1));
     storecmd();
@@ -515,15 +504,6 @@ void consoleintr(int (*getc)(void)) {
 
         case C('N'): // Remove numbers
             delnums();
-            break;
-
-        case C('R'): // Reverse line
-            char line[INPUT_BUF];
-            memcpy(line, input.buf + input.w, input.e - input.w);
-            line[input.e - input.w] = 0;
-            revline(line, input.e - input.w);
-            conseraseline();
-            consputs(line);
             break;
 
         case C('A'):
