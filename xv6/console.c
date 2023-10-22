@@ -453,6 +453,7 @@ resetcmds(void) {
 }
 
 #define C(x)       ((x) - '@') // Control-x
+#define S(x) ((x) + ' ') // Shift-x
 #define ARROW_UP   226
 #define ARROW_DOWN 227
 #define TAB        '\t'
@@ -502,13 +503,15 @@ void consoleintr(int (*getc)(void)) {
             }
             break;
 
-        case C('N'): // Remove numbers
+        case C('N'): 
             delnums();
             break;
 
         case C('A'):
-            movpostostart();
-            input.shift = input.e - input.w;
+            if (input.shift < input.e - input.w) {
+                movpostostart();
+                input.shift = input.e - input.w;
+            }
             break;
 
         case C('E'):
