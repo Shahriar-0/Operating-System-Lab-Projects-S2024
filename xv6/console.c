@@ -453,7 +453,7 @@ resetcmds(void) {
 }
 
 #define C(x)       ((x) - '@') // Control-x
-#define S(x) ((x) + ' ') // Shift-x
+#define S(x)       ((x) + ' ') // Shift-x
 #define ARROW_UP   226
 #define ARROW_DOWN 227
 #define TAB        '\t'
