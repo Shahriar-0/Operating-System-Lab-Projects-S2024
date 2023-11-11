@@ -26,6 +26,7 @@ int uptime(void);
 int nuncle(void);
 int ptime(void);
 int fcopy(char *src, char *dest);
+int droot(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

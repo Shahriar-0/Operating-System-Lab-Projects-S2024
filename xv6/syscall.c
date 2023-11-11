@@ -96,6 +96,7 @@ extern int sys_uptime(void);
 extern int sys_nuncle(void);
 extern int sys_ptime(void);
 extern int sys_fcopy(void);
+extern int sys_droot(void);
 
 static int (*syscalls[])(void) = {
     [SYS_fork] sys_fork,
@@ -122,6 +123,7 @@ static int (*syscalls[])(void) = {
     [SYS_nuncle] sys_nuncle,
     [SYS_ptime] sys_ptime,
     [SYS_fcopy] sys_fcopy,
+    [SYS_droot] sys_droot,
 };
 
 void syscall(void) {

@@ -84,3 +84,7 @@ int sys_ptime(void) {
     return ptime();
 }
 
+int sys_droot(void) {
+    int n = myproc()->tf->ebx;
+    return droot(n);
+}

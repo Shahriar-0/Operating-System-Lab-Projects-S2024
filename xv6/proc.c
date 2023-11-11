@@ -519,3 +519,16 @@ int ptime() {
     return ticks - current_proc->ctime;
 }
 
+int droot(int n) {
+    while(n > 9) {
+        int sum_digits = 0;
+        int temp = n;
+        while(temp > 0) {
+            sum_digits += temp % 10;
+            temp /= 10;
+        }
+        n = sum_digits;
+    }
+    return n;
+}
+

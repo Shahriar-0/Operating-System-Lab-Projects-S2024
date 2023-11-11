@@ -144,16 +144,19 @@ int filewrite(struct file* f, char* addr, int n) {
 }
 
 int fcopy(struct inode* src, struct inode* dest) {
+    // copy buffer
     const int BUF_SIZE = 1;
     char buffer[BUF_SIZE];
     memset(buffer, 0, BUF_SIZE);
 
-
+    // begin file system
     begin_op();
     
+    // limit access to working files
     ilock(src);
     ilock(dest);
     
+    // copy 
     uint offset = 0;
     dest->size = 0;
     while(readi(src, buffer, offset, BUF_SIZE) > 0) {
@@ -164,8 +167,11 @@ int fcopy(struct inode* src, struct inode* dest) {
         offset += BUF_SIZE;
     }
 
+    // release files
     iunlock(src);
     iunlock(dest);
+
+    // end
     end_op();
 
     return 0;
