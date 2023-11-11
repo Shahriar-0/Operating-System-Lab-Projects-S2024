@@ -8,10 +8,10 @@ void test_ptime(void) {
 
     sleep(5);
     processing_time = ptime();
-    printf(1 ,"this process is created: %d miliseconds ago\n", processing_time);
-    sleep(5);
+    printf(1 ,"this process is created: %d milliseconds ago\n", 10 * processing_time);
+    sleep(100);
     int second_timer = ptime() - processing_time;
-    printf(1 ,"now it passed %d miliseconds again!\n",second_timer);
+    printf(1 ,"now it passed %d milliseconds again!\n",10 * second_timer);
 }
 
 int main(int argc, char* argv[]) {
