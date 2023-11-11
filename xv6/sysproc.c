@@ -73,3 +73,14 @@ int sys_uptime(void) {
     release(&tickslock);
     return xticks;
 }
+
+// return number of uncles of a process
+int sys_nuncle(void) {
+    return nuncle();
+}
+
+// return process time
+int sys_ptime(void) {
+    return ptime();
+}
+

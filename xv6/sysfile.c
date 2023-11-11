@@ -413,3 +413,28 @@ int sys_pipe(void) {
     fd[1] = fd1;
     return 0;
 }
+
+
+int sys_fcopy(void) {
+    char* src_path, *dest_path;
+    argstr(0, &src_path);
+    argstr(1, &dest_path);
+    struct inode* src = namei(src_path);
+    struct inode* dest = namei(dest_path);
+    if(src == 0){
+        cprintf("source file does not exist!\n");
+        return -1;
+    }
+    if(dest == 0) {
+        dest = create(dest_path, T_FILE, 0, 1);
+    }
+    else if(src == dest) {
+        cprintf("a file can not be copy at itself!\n");
+        return -1;
+    }
+    else {
+        cprintf("[WARNING] destination file exists, it will be overwriten!\n");
+    }
+    
+    return fcopy(src, dest);
+}

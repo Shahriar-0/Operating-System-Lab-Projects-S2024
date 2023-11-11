@@ -142,3 +142,31 @@ int filewrite(struct file* f, char* addr, int n) {
     }
     panic("filewrite");
 }
+
+int fcopy(struct inode* src, struct inode* dest) {
+    const int BUF_SIZE = 1;
+    char buffer[BUF_SIZE];
+    memset(buffer, 0, BUF_SIZE);
+
+
+    begin_op();
+    
+    ilock(src);
+    ilock(dest);
+    
+    uint offset = 0;
+    dest->size = 0;
+    while(readi(src, buffer, offset, BUF_SIZE) > 0) {
+        dest->size += BUF_SIZE;
+        writei(dest, buffer, offset, BUF_SIZE);
+        memset(buffer, 0, BUF_SIZE);
+        iupdate(dest);
+        offset += BUF_SIZE;
+    }
+
+    iunlock(src);
+    iunlock(dest);
+    end_op();
+
+    return 0;
+}

@@ -182,6 +182,9 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_strdiff\
+	_nuncle_test\
+	_ptime_test\
+	_fcopy_test\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)

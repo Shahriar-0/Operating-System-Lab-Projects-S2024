@@ -205,9 +205,10 @@ int fork(void) {
     acquire(&ptable.lock);
 
     np->state = RUNNABLE;
-
+    
     release(&ptable.lock);
-
+    
+    np->ctime = ticks;
     return pid;
 }
 
@@ -499,3 +500,22 @@ void procdump(void) {
         cprintf("\n");
     }
 }
+
+int nuncle() {
+    struct proc* current_proc = myproc();
+    struct proc* grandparent = current_proc->parent->parent;
+
+    int uncles = 0;
+    struct proc* p;
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if(p->parent == grandparent)
+            uncles++;
+    }
+    return uncles - 1;
+}
+
+int ptime() {
+    struct proc* current_proc = myproc();
+    return ticks - current_proc->ctime;
+}
+

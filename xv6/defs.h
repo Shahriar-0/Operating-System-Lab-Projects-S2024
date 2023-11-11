@@ -120,6 +120,9 @@ void userinit(void);
 int wait(void);
 void wakeup(void*);
 void yield(void);
+int nuncle(void);
+int ptime(void);
+int fcopy(struct inode* src, struct inode* dest);
 
 // swtch.S
 void swtch(struct context**, struct context*);

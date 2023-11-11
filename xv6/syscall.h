@@ -20,3 +20,7 @@
 #define SYS_link   19
 #define SYS_mkdir  20
 #define SYS_close  21
+// added
+#define SYS_nuncle 22
+#define SYS_ptime  23
+#define SYS_fcopy  24 
