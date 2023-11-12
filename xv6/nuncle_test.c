@@ -1,4 +1,3 @@
-
 #include "types.h"
 #include "stat.h"
 #include "user.h"
@@ -27,15 +26,13 @@ void test_nuncle(void) {
         wait();
         exit();
     }
+    // wait for three children to exit
     wait();
     wait();
     wait();
-  
 }
 
 int main(int argc, char* argv[]) {
-    
-    test_nuncle();
-    
+    test_nuncle(); 
     exit();
 }

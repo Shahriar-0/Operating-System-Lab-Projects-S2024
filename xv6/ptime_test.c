@@ -1,17 +1,31 @@
-
 #include "types.h"
 #include "stat.h"
 #include "user.h"
 
 void test_ptime(void) {
-    int processing_time;
+    int t;
 
-    sleep(5);
-    processing_time = ptime();
-    printf(1 ,"this process is created: %d milliseconds ago\n", 10 * processing_time);
+    t = ptime();
+    printf(1 ,"this process is created: %d milliseconds ago\n", 10 * t);
+
     sleep(100);
-    int second_timer = ptime() - processing_time;
-    printf(1 ,"now it passed %d milliseconds again!\n",10 * second_timer);
+    t = ptime() - t;
+    printf(1 ,"now it passed %d milliseconds again!\n",10 * t);
+
+    int pid = fork();
+    if(pid == 0) {
+        sleep(100);
+        int t_child = ptime();
+        printf(1 ,"the child process lasts: %d milliseconds\n", 10 * t_child);
+        exit();
+    }
+    else {
+        wait();
+        sleep(100);
+        t = ptime();
+        printf(1 ,"the father process lasts: %d milliseconds\n", 10 * t);
+    }
+
 }
 
 int main(int argc, char* argv[]) {
