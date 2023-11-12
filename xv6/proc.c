@@ -205,9 +205,8 @@ int fork(void) {
     acquire(&ptable.lock);
 
     np->state = RUNNABLE;
-    
+
     release(&ptable.lock);
-    
     np->ctime = ticks;
     return pid;
 }
@@ -502,9 +501,11 @@ void procdump(void) {
 }
 
 int nuncle() {
+    // get grandparent
     struct proc* current_proc = myproc();
     struct proc* grandparent = current_proc->parent->parent;
 
+    // count all process' grandparent children, then minus 1
     int uncles = 0;
     struct proc* p;
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {

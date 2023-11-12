@@ -84,6 +84,7 @@ int sys_ptime(void) {
     return ptime();
 }
 
+// return digital root of number, read its argument from ebx register
 int sys_droot(void) {
     int n = myproc()->tf->ebx;
     return droot(n);
