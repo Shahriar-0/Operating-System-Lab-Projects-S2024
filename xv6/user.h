@@ -25,7 +25,7 @@ int sleep(int);
 int uptime(void);
 int nuncle(void);
 int ptime(void);
-int fcopy(char *src, char *dest);
+int fcopy(char*, char*);
 int droot(void);
 
 // ulib.c

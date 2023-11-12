@@ -143,9 +143,9 @@ int filewrite(struct file* f, char* addr, int n) {
     panic("filewrite");
 }
 
-int fcopy(struct inode* src, struct inode* dest) {
+int filecopy(struct inode* src, struct inode* dest) {
     // copy buffer
-    const int BUF_SIZE = 1;
+    const int BUF_SIZE = 50;
     char buffer[BUF_SIZE];
     memset(buffer, 0, BUF_SIZE);
 
@@ -155,24 +155,30 @@ int fcopy(struct inode* src, struct inode* dest) {
     // limit access to working files
     ilock(src);
     ilock(dest);
-    
+
     // copy 
     uint offset = 0;
+    int bytes_read;
     dest->size = 0;
-    while(readi(src, buffer, offset, BUF_SIZE) > 0) {
-        dest->size += BUF_SIZE;
-        writei(dest, buffer, offset, BUF_SIZE);
+    while(1) {
+        bytes_read = readi(src, buffer, offset, BUF_SIZE);
+        if(bytes_read == 0)
+            break;
+
+        dest->size += bytes_read;
+        writei(dest, buffer, offset, bytes_read);
         memset(buffer, 0, BUF_SIZE);
         iupdate(dest);
-        offset += BUF_SIZE;
+        offset += bytes_read;
     }
-
-    // release files
-    iunlock(src);
-    iunlock(dest);
 
     // end
     end_op();
+
+    // release files
+    iunlockput(src);
+    iunlockput(dest);
+
 
     return 0;
 }

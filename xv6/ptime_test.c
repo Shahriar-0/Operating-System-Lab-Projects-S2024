@@ -15,8 +15,6 @@ void test_ptime(void) {
 }
 
 int main(int argc, char* argv[]) {
-    
     test_ptime();
-    
     exit();
 }

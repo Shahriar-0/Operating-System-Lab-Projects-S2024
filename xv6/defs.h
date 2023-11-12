@@ -33,6 +33,7 @@ void fileinit(void);
 int fileread(struct file*, char*, int n);
 int filestat(struct file*, struct stat*);
 int filewrite(struct file*, char*, int n);
+int filecopy(struct inode* src, struct inode* dest);
 
 // fs.c
 void readsb(int dev, struct superblock* sb);
@@ -122,7 +123,6 @@ void wakeup(void*);
 void yield(void);
 int nuncle(void);
 int ptime(void);
-int fcopy(struct inode* src, struct inode* dest);
 int droot(int n);
 
 // swtch.S
