@@ -316,10 +316,24 @@ int wait(void) {
     }
 }
 
-int init_queue(int pid) {
-
+void aging(int curr_time) {
     struct proc* p;
-    int queue;//= ROUND_ROBIN;
+
+    acquire(&ptable.lock);
+
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (p->state == RUNNABLE && p->sched.queue != ROUND_ROBIN) {
+            if (curr_time - p->sched.last_exec > MAX_AGE)
+                change_queue(p->pid, ROUND_ROBIN);
+        }
+    }
+
+    release(&ptable.lock);
+}
+
+int init_queue(int pid) {
+    struct proc* p;
+    int queue; //= ROUND_ROBIN;
 
     if (pid == 1 || pid == 2)
         queue = ROUND_ROBIN;
@@ -361,7 +375,7 @@ int change_queue(int pid, int new_queue) {
 
 struct proc* round_robin(struct proc* last_scheduled) {
     struct proc* p = last_scheduled + 1;
-    for (;;p++) {
+    for (;; p++) {
         // hit the end of queue
         if (p >= &ptable.proc[NPROC])
             p = ptable.proc;

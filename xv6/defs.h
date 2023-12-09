@@ -127,6 +127,8 @@ int droot(int);
 
 int change_queue(int, int);
 int init_queue(int);
+void aging(int);
+
 // swtch.S
 void swtch(struct context**, struct context*);
 
