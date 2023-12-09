@@ -39,6 +39,33 @@ enum procstate { UNUSED,
                  RUNNING,
                  ZOMBIE };
 
+// schedule queue
+enum schedqueue {
+    UNSET,
+    ROUND_ROBIN,
+    LCFS,
+    BJF
+};
+
+struct bjfparams {
+    int priority;
+    float priority_ratio;
+    int arrival_time;
+    float arrival_time_ratio;
+    float executed_cycle;
+    float executed_cycle_ratio;
+    int process_size;
+    float process_size_ratio;
+};
+
+// schedule info
+struct schedparams {
+    enum schedqueue queue;
+    struct bjfparams bjf;
+    int last_exec;
+
+};
+
 // Per-process state
 struct proc {
     uint sz;                    // Size of process memory (bytes)
@@ -55,6 +82,7 @@ struct proc {
     struct inode* cwd;          // Current directory
     char name[16];              // Process name (debugging)
     uint ctime;                 // created time
+    struct schedparams sched; 
 };
 
 // Process memory is laid out contiguously, low addresses first:

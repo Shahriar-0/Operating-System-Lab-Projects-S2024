@@ -107,6 +107,15 @@ found:
     memset(p->context, 0, sizeof *p->context);
     p->context->eip = (uint)forkret;
 
+    memset(&p->sched, 0, sizeof(p->sched));
+    p->sched.queue = UNSET;
+    p->sched.bjf.priority = 1;
+    p->sched.bjf.priority_ratio = 1;
+    p->sched.bjf.arrival_time_ratio = 1;
+    p->sched.bjf.executed_cycle_ratio = 1;
+    p->sched.bjf.process_size = 0;
+    p->sched.bjf.process_size_ratio = 0;
+
     return p;
 }
 
@@ -144,6 +153,8 @@ void userinit(void) {
     p->state = RUNNABLE;
 
     release(&ptable.lock);
+
+    init_queue(p->pid);
 }
 
 // Grow current process's memory by n bytes.
@@ -207,7 +218,15 @@ int fork(void) {
     np->state = RUNNABLE;
 
     release(&ptable.lock);
+
+    acquire(&tickslock);
+    np->sched.last_exec = ticks;
+    np->sched.bjf.arrival_time = ticks;
     np->ctime = ticks;
+    release(&tickslock);
+
+    init_queue(np->pid);
+
     return pid;
 }
 
@@ -297,6 +316,108 @@ int wait(void) {
     }
 }
 
+int init_queue(int pid) {
+
+    struct proc* p;
+    int queue;//= ROUND_ROBIN;
+
+    if (pid == 1 || pid == 2)
+        queue = ROUND_ROBIN;
+    else if (pid > 2)
+        queue = LCFS;
+    else
+        return -1;
+
+    acquire(&ptable.lock);
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (p->pid == pid) {
+            p->sched.queue = queue;
+            break;
+        }
+    }
+    release(&ptable.lock);
+
+    return 0;
+}
+
+int change_queue(int pid, int new_queue) {
+    struct proc* p;
+
+    if (new_queue == UNSET) {
+        return -1;
+    }
+
+    acquire(&ptable.lock);
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (p->pid == pid) {
+            p->sched.queue = new_queue;
+            break;
+        }
+    }
+    release(&ptable.lock);
+
+    return 0;
+}
+
+struct proc* round_robin(struct proc* last_scheduled) {
+    struct proc* p = last_scheduled + 1;
+    for (;;p++) {
+        // hit the end of queue
+        if (p >= &ptable.proc[NPROC])
+            p = ptable.proc;
+
+        // found next proc
+        if (p->state == RUNNABLE && p->sched.queue == ROUND_ROBIN)
+            return p;
+
+        // empty queue
+        if (p == last_scheduled)
+            return 0;
+    }
+}
+
+float evalrank(struct bjfparams params) {
+    return (params.priority * params.priority_ratio +
+            params.arrival_time * params.arrival_time_ratio +
+            params.executed_cycle * params.executed_cycle_ratio +
+            params.process_size * params.process_size_ratio);
+}
+
+struct proc* best_job_first(void) {
+    struct proc* next_p = 0;
+    float best_rank;
+
+    struct proc* p;
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (p->state != RUNNABLE || p->sched.queue != BJF)
+            continue;
+        float rank = evalrank(p->sched.bjf);
+        if (next_p == 0 || rank < best_rank) {
+            next_p = p;
+            best_rank = rank;
+        }
+    }
+
+    return next_p;
+}
+
+struct proc* last_come_first_serve(void) {
+    struct proc* next_p = 0;
+    int latest_time = -1;
+
+    struct proc* p;
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (p->state != RUNNABLE || p->sched.queue != LCFS)
+            continue;
+        int time = p->ctime;
+        if (next_p == 0 || time > latest_time) {
+            next_p = p;
+            latest_time = time;
+        }
+    }
+
+    return next_p;
+}
 // PAGEBREAK: 42
 //  Per-CPU process scheduler.
 //  Each CPU calls scheduler() after setting itself up.
@@ -310,30 +431,42 @@ void scheduler(void) {
     struct cpu* c = mycpu();
     c->proc = 0;
 
+    struct proc* last_scheduled = ptable.proc + NPROC - 1;
+
     for (;;) {
         // Enable interrupts on this processor.
         sti();
 
         // Loop over process table looking for process to run.
         acquire(&ptable.lock);
-        for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-            if (p->state != RUNNABLE)
-                continue;
 
-            // Switch to chosen process.  It is the process's job
-            // to release ptable.lock and then reacquire it
-            // before jumping back to us.
-            c->proc = p;
-            switchuvm(p);
-            p->state = RUNNING;
+        p = round_robin(last_scheduled);
+        last_scheduled = (p != 0) ? p : last_scheduled;
+        if (p == 0)
+            p = last_come_first_serve();
+        if (p == 0)
+            p = best_job_first();
+        if (p == 0) {
+            release(&ptable.lock);
+            continue;
+        } // indentationists go to hell
 
-            swtch(&(c->scheduler), p->context);
-            switchkvm();
+        // Switch to chosen process.  It is the process's job
+        // to release ptable.lock and then reacquire it
+        // before jumping back to us.
+        c->proc = p;
+        switchuvm(p);
+        p->state = RUNNING;
 
-            // Process is done running for now.
-            // It should have changed its p->state before coming back.
-            c->proc = 0;
-        }
+        p->sched.last_exec = ticks;
+        p->sched.bjf.executed_cycle += 0.1f;
+
+        swtch(&(c->scheduler), p->context);
+        switchkvm();
+
+        // Process is done running for now.
+        // It should have changed its p->state before coming back.
+        c->proc = 0;
         release(&ptable.lock);
     }
 }
@@ -509,7 +642,7 @@ int nuncle() {
     int uncles = 0;
     struct proc* p;
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-        if(p->parent == grandparent)
+        if (p->parent == grandparent)
             uncles++;
     }
     return uncles - 1;
@@ -521,10 +654,10 @@ int ptime() {
 }
 
 int droot(int n) {
-    while(n > 9) {
+    while (n > 9) {
         int sum_digits = 0;
         int temp = n;
-        while(temp > 0) {
+        while (temp > 0) {
             sum_digits += temp % 10;
             temp /= 10;
         }
@@ -532,4 +665,3 @@ int droot(int n) {
     }
     return n;
 }
-

@@ -123,8 +123,10 @@ void wakeup(void*);
 void yield(void);
 int nuncle(void);
 int ptime(void);
-int droot(int n);
+int droot(int);
 
+int change_queue(int, int);
+int init_queue(int);
 // swtch.S
 void swtch(struct context**, struct context*);
 
