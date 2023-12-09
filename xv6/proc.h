@@ -52,12 +52,13 @@ enum schedqueue {
 
 struct bjfparams {
     int priority;
-    float priority_ratio;
-    int arrival_time;
-    float arrival_time_ratio;
     float executed_cycle;
-    float executed_cycle_ratio;
+    int arrival_time;
     int process_size;
+
+    float priority_ratio;
+    float executed_cycle_ratio;
+    float arrival_time_ratio;
     float process_size_ratio;
 };
 

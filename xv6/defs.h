@@ -124,10 +124,12 @@ void yield(void);
 int nuncle(void);
 int ptime(void);
 int droot(int);
-
 int change_queue(int, int);
 int init_queue(int);
 void aging(int);
+int set_bjs_proc(int, float, float, float, float);
+int set_bjs_sys(float, float, float, float);
+
 
 // swtch.S
 void swtch(struct context**, struct context*);
@@ -160,8 +162,10 @@ char* strncpy(char*, const char*, int);
 int argint(int, int*);
 int argptr(int, char**, int);
 int argstr(int, char**);
+int argfloat(int, float*);
 int fetchint(uint, int*);
 int fetchstr(uint, char**);
+int fetchfloat(uint, float*);
 void syscall(void);
 
 // timer.c

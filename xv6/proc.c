@@ -109,13 +109,16 @@ found:
 
     memset(&p->sched, 0, sizeof(p->sched));
     p->sched.queue = UNSET;
-    p->sched.bjf.priority = 1;
-    p->sched.bjf.priority_ratio = 1;
-    p->sched.bjf.arrival_time_ratio = 1;
-    p->sched.bjf.executed_cycle_ratio = 1;
+    p->sched.bjf.priority = 0;
+    p->sched.bjf.arrival_time = 0;
+    p->sched.bjf.executed_cycle = 0;
     p->sched.bjf.process_size = 0;
-    p->sched.bjf.process_size_ratio = 0;
 
+    p->sched.bjf.priority_ratio = 0;
+    p->sched.bjf.arrival_time_ratio = 0;
+    p->sched.bjf.executed_cycle_ratio = 0;
+    p->sched.bjf.process_size_ratio = 0;
+    
     return p;
 }
 
@@ -224,6 +227,9 @@ int fork(void) {
     np->sched.bjf.arrival_time = ticks;
     np->ctime = ticks;
     release(&tickslock);
+
+    // IDK, maybe ?!
+    np->sched.bjf.process_size = sizeof np;
 
     init_queue(np->pid);
 
@@ -335,9 +341,9 @@ int init_queue(int pid) {
     struct proc* p;
     int queue; //= ROUND_ROBIN;
 
-    if (pid == 1 || pid == 2)
+    if (pid == 1)
         queue = ROUND_ROBIN;
-    else if (pid > 2)
+    else if (pid > 1)
         queue = LCFS;
     else
         return -1;
@@ -367,6 +373,41 @@ int change_queue(int pid, int new_queue) {
             p->sched.queue = new_queue;
             break;
         }
+    }
+    release(&ptable.lock);
+
+    return 0;
+}
+
+int set_bjs_proc(int pid, float priority_ratio, float arrival_time_ratio, 
+                    float executed_cycle_ratio, float process_size_ratio) {
+
+    struct proc* p;
+    acquire(&ptable.lock);
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (p->pid == pid) {
+            p->sched.bjf.priority_ratio = priority_ratio;
+            p->sched.bjf.arrival_time_ratio = arrival_time_ratio;
+            p->sched.bjf.executed_cycle_ratio = executed_cycle_ratio;
+            p->sched.bjf.process_size_ratio = process_size_ratio;
+            break;
+        }
+    }
+    release(&ptable.lock);
+
+    return 0;
+}
+
+int set_bjs_sys(float priority_ratio, float arrival_time_ratio, 
+                    float executed_cycle_ratio, float process_size_ratio) {
+
+    struct proc* p;
+    acquire(&ptable.lock);
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {    
+        p->sched.bjf.priority_ratio = priority_ratio;
+        p->sched.bjf.arrival_time_ratio = arrival_time_ratio;
+        p->sched.bjf.executed_cycle_ratio = executed_cycle_ratio;
+        p->sched.bjf.process_size_ratio = process_size_ratio;
     }
     release(&ptable.lock);
 

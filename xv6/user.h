@@ -27,6 +27,9 @@ int nuncle(void);
 int ptime(void);
 int fcopy(char*, char*);
 int droot(void);
+int chqueue(void);
+int bjsproc(void);
+int bjssys(void);
 
 // ulib.c
 int stat(const char*, struct stat*);
