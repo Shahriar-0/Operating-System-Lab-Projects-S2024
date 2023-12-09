@@ -118,7 +118,7 @@ found:
     p->sched.bjf.arrival_time_ratio = 0;
     p->sched.bjf.executed_cycle_ratio = 0;
     p->sched.bjf.process_size_ratio = 0;
-    
+
     return p;
 }
 
@@ -229,7 +229,7 @@ int fork(void) {
     release(&tickslock);
 
     // IDK, maybe ?!
-    np->sched.bjf.process_size = sizeof np;
+    np->sched.bjf.process_size = sizeof(np);
 
     init_queue(np->pid);
 
@@ -362,26 +362,32 @@ int init_queue(int pid) {
 
 int change_queue(int pid, int new_queue) {
     struct proc* p;
-
     if (new_queue == UNSET) {
         return -1;
     }
 
+    int is_process_exist = 0;
     acquire(&ptable.lock);
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
         if (p->pid == pid) {
+            is_process_exist = 1;
             p->sched.queue = new_queue;
+            acquire(&tickslock);
+            p->sched.last_exec = ticks;
+            release(&tickslock);
             break;
         }
     }
     release(&ptable.lock);
 
+    if (!is_process_exist)
+        return -1;
+
     return 0;
 }
 
-int set_bjs_proc(int pid, float priority_ratio, float arrival_time_ratio, 
-                    float executed_cycle_ratio, float process_size_ratio) {
-
+int set_bjs_proc(int pid, float priority_ratio, float arrival_time_ratio,
+                 float executed_cycle_ratio, float process_size_ratio) {
     struct proc* p;
     acquire(&ptable.lock);
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
@@ -398,18 +404,96 @@ int set_bjs_proc(int pid, float priority_ratio, float arrival_time_ratio,
     return 0;
 }
 
-int set_bjs_sys(float priority_ratio, float arrival_time_ratio, 
-                    float executed_cycle_ratio, float process_size_ratio) {
-
+int set_bjs_sys(float priority_ratio, float arrival_time_ratio,
+                float executed_cycle_ratio, float process_size_ratio) {
     struct proc* p;
     acquire(&ptable.lock);
-    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {    
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
         p->sched.bjf.priority_ratio = priority_ratio;
         p->sched.bjf.arrival_time_ratio = arrival_time_ratio;
         p->sched.bjf.executed_cycle_ratio = executed_cycle_ratio;
         p->sched.bjf.process_size_ratio = process_size_ratio;
     }
     release(&ptable.lock);
+
+    return 0;
+}
+
+void printspaces(int count) {
+    for (int i = 0; i < count; ++i)
+        cprintf(" ");
+}
+int digitcount(int num) {
+    if (num == 0) return 1;
+    int count = 0;
+    while (num) {
+        num /= 10;
+        ++count;
+    }
+    return count;
+}
+
+int print_processes_infos(void) {
+    static char* states[] = {
+        [UNUSED] "unused",
+        [EMBRYO] "embryo",
+        [SLEEPING] "sleeping",
+        [RUNNABLE] "runnable",
+        [RUNNING] "running",
+        [ZOMBIE] "zombie"};
+
+    static int columns[] = {16, 8, 9, 8, 8, 8, 8, 9, 8, 8, 8, 8};
+    cprintf(
+        "Process_Name    PID     State    Queue   Cycle   Arrival Ticket  Priority R_Prty  R_Arvl  R_Exec  Rank\n"
+        "------------------------------------------------------------------------------------------------------\n");
+
+    struct proc* p;
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (p->state == UNUSED)
+            continue;
+
+        const char* state;
+        if (p->state >= 0 && p->state < NELEM(states) && states[p->state])
+            state = states[p->state];
+        else
+            state = "???";
+
+        cprintf("%s", p->name);
+        printspaces(columns[0] - strlen(p->name));
+
+        cprintf("%d", p->pid);
+        printspaces(columns[1] - digitcount(p->pid));
+
+        cprintf("%s", state);
+        printspaces(columns[2] - strlen(state));
+
+        cprintf("%d", p->sched.queue);
+        printspaces(columns[3] - digitcount(p->sched.queue));
+
+        cprintf("%d", (int)p->sched.bjf.executed_cycle);
+        printspaces(columns[4] - digitcount((int)p->sched.bjf.executed_cycle));
+
+        cprintf("%d", p->sched.bjf.arrival_time);
+        printspaces(columns[5] - digitcount(p->sched.bjf.arrival_time));
+
+        cprintf("%d", -1);
+        printspaces(columns[6] - digitcount(11));
+
+        cprintf("%d", p->sched.bjf.priority);
+        printspaces(columns[7] - digitcount(p->sched.bjf.priority));
+
+        cprintf("%d", (int)p->sched.bjf.priority_ratio);
+        printspaces(columns[8] - digitcount((int)p->sched.bjf.priority_ratio));
+
+        cprintf("%d", (int)p->sched.bjf.arrival_time_ratio);
+        printspaces(columns[9] - digitcount((int)p->sched.bjf.arrival_time_ratio));
+
+        cprintf("%d", (int)p->sched.bjf.executed_cycle_ratio);
+        printspaces(columns[10] - digitcount((int)p->sched.bjf.executed_cycle_ratio));
+
+        cprintf("%d", (int)evalrank(p->sched.bjf));
+        cprintf("\n");
+    }
 
     return 0;
 }

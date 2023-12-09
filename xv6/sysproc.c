@@ -122,3 +122,8 @@ int sys_bjssys(void) {
     return set_bjs_sys(priority_ratio, arrival_time_ratio, executed_cycle_ratio, process_size_ratio);
 
 }
+
+int sys_procinfo(void) {
+
+    return print_processes_infos();
+}

@@ -9,6 +9,7 @@ struct spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
+struct bjfparams;
 
 // bio.c
 void binit(void);
@@ -129,7 +130,8 @@ int init_queue(int);
 void aging(int);
 int set_bjs_proc(int, float, float, float, float);
 int set_bjs_sys(float, float, float, float);
-
+float evalrank(struct bjfparams params);
+int print_processes_infos(void);
 
 // swtch.S
 void swtch(struct context**, struct context*);

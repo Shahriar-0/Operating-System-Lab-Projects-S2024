@@ -114,6 +114,7 @@ extern int sys_droot(void);
 extern int sys_chqueue(void);
 extern int sys_bjsproc(void);
 extern int sys_bjssys(void);
+extern int sys_procinfo(void);
 
 
 static int (*syscalls[])(void) = {
@@ -145,6 +146,7 @@ static int (*syscalls[])(void) = {
     [SYS_chqueue] sys_chqueue,
     [SYS_bjsproc] sys_bjsproc,
     [SYS_bjssys] sys_bjssys,
+    [SYS_procinfo] sys_procinfo,
 };
 
 void syscall(void) {

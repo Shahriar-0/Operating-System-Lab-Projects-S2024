@@ -27,9 +27,10 @@ int nuncle(void);
 int ptime(void);
 int fcopy(char*, char*);
 int droot(void);
-int chqueue(void);
-int bjsproc(void);
-int bjssys(void);
+int chqueue(int, int);
+int bjsproc(int, float, float, float, float);
+int bjssys(float, float, float, float);
+int procinfo(void);
 
 // ulib.c
 int stat(const char*, struct stat*);
