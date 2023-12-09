@@ -442,10 +442,10 @@ int print_processes_infos(void) {
         [RUNNING] "running",
         [ZOMBIE] "zombie"};
 
-    static int columns[] = {16, 8, 9, 8, 8, 8, 8, 9, 8, 8, 8, 8};
+    static int columns[] = {16, 8, 12, 8, 8, 8, 8, 8, 8, 8, 8, 8};
     cprintf(
-        "Process_Name    PID     State    Queue   Cycle   Arrival Ticket  Priority R_Prty  R_Arvl  R_Exec  Rank\n"
-        "------------------------------------------------------------------------------------------------------\n");
+        "Process_Name    PID     State     Queue   Cycle   Arrival  Priority  Size  R_Prty  R_Arvl  R_Exec  R_Size  Rank\n"
+        "---------------------------------------------------------------------------------------------------------------\n");
 
     struct proc* p;
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
@@ -476,11 +476,11 @@ int print_processes_infos(void) {
         cprintf("%d", p->sched.bjf.arrival_time);
         printspaces(columns[5] - digitcount(p->sched.bjf.arrival_time));
 
-        cprintf("%d", -1);
-        printspaces(columns[6] - digitcount(11));
-
         cprintf("%d", p->sched.bjf.priority);
-        printspaces(columns[7] - digitcount(p->sched.bjf.priority));
+        printspaces(columns[6] - digitcount(p->sched.bjf.priority));
+
+        cprintf("%d", p->sched.bjf.process_size);
+        printspaces(columns[7] - digitcount(p->sched.bjf.process_size));
 
         cprintf("%d", (int)p->sched.bjf.priority_ratio);
         printspaces(columns[8] - digitcount((int)p->sched.bjf.priority_ratio));
@@ -490,6 +490,9 @@ int print_processes_infos(void) {
 
         cprintf("%d", (int)p->sched.bjf.executed_cycle_ratio);
         printspaces(columns[10] - digitcount((int)p->sched.bjf.executed_cycle_ratio));
+
+        cprintf("%d", (int)p->sched.bjf.process_size_ratio);
+        printspaces(columns[11] - digitcount((int)p->sched.bjf.process_size_ratio));
 
         cprintf("%d", (int)evalrank(p->sched.bjf));
         cprintf("\n");
