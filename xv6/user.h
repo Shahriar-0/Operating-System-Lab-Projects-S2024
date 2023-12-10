@@ -32,6 +32,7 @@ int bjsproc(int, float, float, float, float);
 int bjssys(float, float, float, float);
 int procinfo(void);
 
+typedef unsigned int uint; // i dunno but it doesn't compile without this
 // ulib.c
 int stat(const char*, struct stat*);
 char* strcpy(char*, const char*);
