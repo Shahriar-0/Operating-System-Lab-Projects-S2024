@@ -7,15 +7,14 @@
 
 void perform_computation(int i) {
     int x = 1;
-    for (int j = 0; j < 2 * i; ++j) {
-        for (long k = 0; k < 1000000000; ++k)
+    for (int j = 0; j < i; j++) 
+        for (long k = 0; k < 1000000000; k++)
             x++;
-    }
 }
 
 int main() {
     srand(time(NULL));
-    for (int i = 0; i < PROCS_NUM; ++i) {
+    for (int i = 0; i < PROCS_NUM; i++) {
         int pid = fork();
         if (pid > 0)
             continue;
@@ -26,7 +25,7 @@ int main() {
             exit(EXIT_SUCCESS);
         }
     }
-    while (wait(NULL) != 0)
+    while (wait(NULL) != -1)
         ;
 
     exit(EXIT_SUCCESS);
