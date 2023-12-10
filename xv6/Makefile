@@ -186,7 +186,7 @@ UPROGS=\
 	_ptime_test\
 	_fcopy_test\
 	_droot_test\
-	_schedule\
+	_sched\
 	_foo\
 
 fs.img: mkfs README $(UPROGS)
