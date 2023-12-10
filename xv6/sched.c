@@ -1,6 +1,16 @@
 #include "types.h"
 #include "user.h"
 
+void help(int force) {
+    if(force)
+        printf(1, "invalid command\n");
+    
+    printf(1, "available commands:\n");
+    printf(1, "chq <pid> <new queue>\n");
+    printf(1, "setproc <pid> <priority_ratio> <arrival_time_ratio> <executed_cycle_ratio> <process_size_ratio>\n");
+    printf(1, "setsys <priority_ratio> <arrival_time_ratio> <executed_cycle_ratio> <process_size_ratio>\n");
+
+}
 
 void print_info() {
     procinfo();
@@ -56,14 +66,14 @@ int main(int argc, char* argv[]) {
         }
         set_queue(atoi(argv[2]), atoi(argv[3]));
     }
-    else if (!strcmp(argv[1], "bjsp")) {
+    else if (!strcmp(argv[1], "setproc")) {
         if (argc < 7) {
             printf(1, "invalid command\n");
             exit();
         }
         set_proc_bjs_params(atoi(argv[2]), atoi(argv[3]), atoi(argv[4]), atoi(argv[5]), atoi(argv[6]));
     }
-    else if (!strcmp(argv[1], "bjss")) {
+    else if (!strcmp(argv[1], "setsys")) {
         if (argc < 6) {
             printf(1, "invalid command\n");
             exit();
@@ -73,9 +83,11 @@ int main(int argc, char* argv[]) {
     else if (!strcmp(argv[1], "info")) {
         print_info();
     }
+    else if (!strcmp(argv[1], "help")) {
+        help(0);
+    }
     else {
-        printf(1, "%d\n", atoi(argv[1]));
-    
+        help(1);
     }
     exit();
 }

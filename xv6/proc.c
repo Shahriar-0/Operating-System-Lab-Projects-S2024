@@ -114,10 +114,10 @@ found:
     p->sched.bjf.executed_cycle = 0;
     p->sched.bjf.process_size = 0;
 
-    p->sched.bjf.priority_ratio = 0;
-    p->sched.bjf.arrival_time_ratio = 0;
-    p->sched.bjf.executed_cycle_ratio = 0;
-    p->sched.bjf.process_size_ratio = 0;
+    p->sched.bjf.priority_ratio = 1;
+    p->sched.bjf.arrival_time_ratio = 1;
+    p->sched.bjf.executed_cycle_ratio = 1;
+    p->sched.bjf.process_size_ratio = 1;
 
     return p;
 }
@@ -339,11 +339,12 @@ void aging(int curr_time) {
 
 int init_queue(int pid) {
     struct proc* p;
-    int queue; //= ROUND_ROBIN;
+    int queue;
 
-    if (pid == 1)
+    // init and shell
+    if (pid == 1 || pid == 2)
         queue = ROUND_ROBIN;
-    else if (pid > 1)
+    else if (pid > 2)
         queue = LCFS;
     else
         return -1;
