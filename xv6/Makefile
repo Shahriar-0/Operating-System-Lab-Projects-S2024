@@ -187,6 +187,7 @@ UPROGS=\
 	_fcopy_test\
 	_droot_test\
 	_schedule\
+	_foo\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
