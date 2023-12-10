@@ -50,8 +50,18 @@ enum schedqueue {
     BJF
 };
 
+// BJF priority
+enum schedpriroty {
+    HIGH = 1,
+    ABOVE_NORMAL,
+    NORMAL,
+    BELOW_NORMAL,
+    LOW
+};
+
+// bjs parameters
 struct bjfparams {
-    int priority;
+    enum schedpriroty priority;
     float executed_cycle;
     int arrival_time;
     int process_size;
@@ -67,7 +77,6 @@ struct schedparams {
     enum schedqueue queue;
     struct bjfparams bjf;
     int last_exec;
-
 };
 
 // Per-process state
@@ -86,7 +95,7 @@ struct proc {
     struct inode* cwd;          // Current directory
     char name[16];              // Process name (debugging)
     uint ctime;                 // created time
-    struct schedparams sched; 
+    struct schedparams sched;   // scheduling parameters
 };
 
 // Process memory is laid out contiguously, low addresses first:

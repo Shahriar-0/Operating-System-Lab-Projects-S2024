@@ -109,7 +109,7 @@ found:
 
     memset(&p->sched, 0, sizeof(p->sched));
     p->sched.queue = UNSET;
-    p->sched.bjf.priority = 1;
+    p->sched.bjf.priority = NORMAL;
     p->sched.bjf.arrival_time = 0;
     p->sched.bjf.executed_cycle = 0;
     p->sched.bjf.process_size = 0;
@@ -432,11 +432,10 @@ int digitcount(int num) {
     int count = 0;
     while (num) {
         num /= 10;
-        ++count;
+        count++;
     }
     return count;
 }
-
 int print_processes_infos(void) {
     static char* states[] = {
         [UNUSED] "unused",
