@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     int result = droot();
     asm volatile(
         "movl %0, %%ebx;"
-        : : "r"(prev_ebx));
+        :: "r"(prev_ebx));
     printf(1, "digital root of %d is %d\n", n, result);
     exit();
 }
