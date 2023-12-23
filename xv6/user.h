@@ -23,7 +23,16 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int nuncle(void);
+int ptime(void);
+int fcopy(char*, char*);
+int droot(void);
+int chqueue(int, int);
+int bjsproc(int, float, float, float, float);
+int bjssys(float, float, float, float);
+int procinfo(void);
 
+typedef unsigned int uint; // i dunno but it doesn't compile without this
 // ulib.c
 int stat(const char*, struct stat*);
 char* strcpy(char*, const char*);

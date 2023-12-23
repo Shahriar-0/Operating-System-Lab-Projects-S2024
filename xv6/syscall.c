@@ -23,6 +23,16 @@ int fetchint(uint addr, int* ip) {
     return 0;
 }
 
+// Fetch the float at addr from the current process.
+int fetchfloat(uint addr, float* fp) {
+    struct proc* curproc = myproc();
+
+    if (addr >= curproc->sz || addr + 4 > curproc->sz)
+        return -1;
+    *fp = *(float*)(addr);
+    return 0;
+}
+
 // Fetch the nul-terminated string at addr from the current process.
 // Doesn't actually copy the string - just sets *pp to point at it.
 // Returns length of string, not including nul.
@@ -46,6 +56,10 @@ int argint(int n, int* ip) {
     return fetchint((myproc()->tf->esp) + 4 + 4 * n, ip);
 }
 
+// Fetch the nth 32-bit system call argument in float.
+int argfloat(int n, float* fp) {
+    return fetchfloat((myproc()->tf->esp) + 4 + 4 * n, fp);
+}
 // Fetch the nth word-sized system call argument as a pointer
 // to a block of memory of size bytes.  Check that the pointer
 // lies within the process address space.
@@ -93,6 +107,15 @@ extern int sys_unlink(void);
 extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
+extern int sys_nuncle(void);
+extern int sys_ptime(void);
+extern int sys_fcopy(void);
+extern int sys_droot(void);
+extern int sys_chqueue(void);
+extern int sys_bjsproc(void);
+extern int sys_bjssys(void);
+extern int sys_procinfo(void);
+
 
 static int (*syscalls[])(void) = {
     [SYS_fork] sys_fork,
@@ -116,6 +139,14 @@ static int (*syscalls[])(void) = {
     [SYS_link] sys_link,
     [SYS_mkdir] sys_mkdir,
     [SYS_close] sys_close,
+    [SYS_nuncle] sys_nuncle,
+    [SYS_ptime] sys_ptime,
+    [SYS_fcopy] sys_fcopy,
+    [SYS_droot] sys_droot,
+    [SYS_chqueue] sys_chqueue,
+    [SYS_bjsproc] sys_bjsproc,
+    [SYS_bjssys] sys_bjssys,
+    [SYS_procinfo] sys_procinfo,
 };
 
 void syscall(void) {

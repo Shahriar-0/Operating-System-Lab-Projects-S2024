@@ -142,3 +142,43 @@ int filewrite(struct file* f, char* addr, int n) {
     }
     panic("filewrite");
 }
+
+int filecopy(struct inode* src, struct inode* dest) {
+    // copy buffer
+    const int BUF_SIZE = 50;
+    char buffer[BUF_SIZE];
+    memset(buffer, 0, BUF_SIZE);
+
+    // begin file system
+    begin_op();
+    
+    // limit access to working files
+    ilock(src);
+    ilock(dest);
+
+    // copy 
+    uint offset = 0;
+    int bytes_read;
+    dest->size = 0;
+    while(1) {
+        bytes_read = readi(src, buffer, offset, BUF_SIZE);
+        if(bytes_read == 0)
+            break;
+
+        dest->size += bytes_read;
+        writei(dest, buffer, offset, bytes_read);
+        memset(buffer, 0, BUF_SIZE);
+        iupdate(dest);
+        offset += bytes_read;
+    }
+
+    // end
+    end_op();
+
+    // release files
+    iunlockput(src);
+    iunlockput(dest);
+
+
+    return 0;
+}
