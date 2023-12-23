@@ -116,7 +116,6 @@ extern int sys_bjsproc(void);
 extern int sys_bjssys(void);
 extern int sys_procinfo(void);
 
-
 static int (*syscalls[])(void) = {
     [SYS_fork] sys_fork,
     [SYS_exit] sys_exit,

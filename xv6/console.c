@@ -381,20 +381,20 @@ loadcmd(void) {
 static void
 copycmd(void) {
     int j = 0;
-    for(int i = input.w; i < input.e; i++) {
+    for (int i = input.w; i < input.e; i++) {
         cmds.tmpcmd[j] = input.buf[i];
         j++;
     }
-    for(; j < INPUT_BUF; j++) {
+    for (; j < INPUT_BUF; j++) {
         cmds.tmpcmd[j] = 0;
-    } 
+    }
 }
 
 static void
 recovercmd(void) {
     conseraseline();
     for (int i = 0; i < INPUT_BUF; i++) {
-        if(cmds.tmpcmd[i] == 0)
+        if (cmds.tmpcmd[i] == 0)
             break;
         input.buf[input.e++ % INPUT_BUF] = cmds.tmpcmd[i];
         consputc(cmds.tmpcmd[i]);
@@ -503,7 +503,7 @@ void consoleintr(int (*getc)(void)) {
             }
             break;
 
-        case C('N'): 
+        case C('N'):
             delnums();
             break;
 

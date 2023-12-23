@@ -2,14 +2,13 @@
 #include "user.h"
 
 void help(int force) {
-    if(force)
+    if (force)
         printf(1, "invalid command\n");
-    
+
     printf(1, "available commands:\n");
     printf(1, "chq <pid> <new queue>\n");
     printf(1, "setproc <pid> <priority_ratio> <arrival_time_ratio> <executed_cycle_ratio> <process_size_ratio>\n");
     printf(1, "setsys <priority_ratio> <arrival_time_ratio> <executed_cycle_ratio> <process_size_ratio>\n");
-
 }
 
 void print_info() {
@@ -33,8 +32,7 @@ void set_queue(int pid, int new_queue) {
 }
 
 void set_proc_bjs_params(int pid, float priority_ratio, float arrival_time_ratio,
-                 float executed_cycle_ratio, float process_size_ratio) {
-
+                         float executed_cycle_ratio, float process_size_ratio) {
     int res = bjsproc(pid, priority_ratio, arrival_time_ratio, executed_cycle_ratio, process_size_ratio);
 
     if (res < 0)
@@ -44,8 +42,7 @@ void set_proc_bjs_params(int pid, float priority_ratio, float arrival_time_ratio
 }
 
 void set_sys_bjs_params(float priority_ratio, float arrival_time_ratio,
-                 float executed_cycle_ratio, float process_size_ratio) {
-
+                        float executed_cycle_ratio, float process_size_ratio) {
     int res = bjssys(priority_ratio, arrival_time_ratio, executed_cycle_ratio, process_size_ratio);
 
     if (res < 0)
