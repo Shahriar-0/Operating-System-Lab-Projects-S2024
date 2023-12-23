@@ -9,6 +9,7 @@ int main(int argc, char* argv[]) {
     }
 
     int n = atoi(argv[1]), prev_ebx;
+    // clang-format off
     asm volatile(
         "movl %%ebx, %0;"
         "movl %1, %%ebx;"
@@ -18,6 +19,7 @@ int main(int argc, char* argv[]) {
     asm volatile(
         "movl %0, %%ebx;"
         :: "r"(prev_ebx));
+    // clang-format on
     printf(1, "digital root of %d is %d\n", n, result);
     exit();
 }
