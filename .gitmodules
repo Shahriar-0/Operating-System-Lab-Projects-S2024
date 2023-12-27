@@ -5,3 +5,6 @@
 	path = Archive/V2
 	url = https://github.com/Ipouyall/OS-Lab-Projects.git
 
+[submodule "Archive/V3"]
+	path = Archive/V3
+	url = https://github.com/alumpish/OS-Lab-Projects.git
