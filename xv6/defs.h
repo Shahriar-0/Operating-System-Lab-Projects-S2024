@@ -158,7 +158,7 @@ void initsleeplock(struct sleeplock*, char*);
 void initprioritylock(struct prioritylock*, char*);
 void acquirepriority(struct prioritylock*);
 void releasepriority(struct prioritylock*);
-
+void showlockqueue(struct prioritylock*);
 
 // string.c
 int memcmp(const void*, const void*, uint);

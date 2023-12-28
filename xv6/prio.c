@@ -18,6 +18,6 @@ int main() {
     }
     while(wait() != -1)
         ;
-    
+        
     exit();
 }

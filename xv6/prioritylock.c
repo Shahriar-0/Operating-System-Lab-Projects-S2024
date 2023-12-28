@@ -8,42 +8,47 @@
 #include "spinlock.h"
 #include "prioritylock.h"
 
-void show_queue(struct prioritylock* lk) {
-    for (int i = 0; i < NPROC; i++) {
-        if (lk->lockreq[i] != 0) {
-            
-        }
+void showlockqueue(struct prioritylock* lk) {
+    acquire(&lk->lk);
+    cprintf("[");
+    for (int i = 0; i < lk->inqueue; i++) {
+        cprintf("%d", lk->lockreq[i]);
+        if(i != lk->inqueue - 1)
+            cprintf(", ");
     }
+    cprintf("]\n");
+    release(&lk->lk);
 }
 
 void enqueue(struct prioritylock* lk, int pid) {
-    for (int i = 0; i < NPROC; i++) {
-        if (lk->lockreq[i] == 0) {
-            lk->lockreq[i] = pid;
-            break;
-        }
+    if(lk->inqueue == NPROC)
+        return;
+
+    int pos = 0;
+    while(lk->lockreq[pos] > pid)
+        pos++;
+
+    for (int i = lk->inqueue; i > pos; i--) {
+        lk->lockreq[i] = lk->lockreq[i - 1];
     }
+    
+    lk->lockreq[pos] = pid;
+    lk->inqueue++;
 }
 
 int isprior(struct prioritylock* lk) {
-    int prior_pid = 0;
-    for (int i = 0; i < NPROC; i++) {
-        if (lk->lockreq[i] != 0 && ((lk->lockreq[i] > prior_pid) || prior_pid == 0)) {
-            prior_pid = lk->lockreq[i];
-        }
-    }
 
-    if(prior_pid != myproc()->pid){
+    if(lk->inqueue == 0 || lk->lockreq[0] != myproc()->pid) {
         return 0;
     }
 
-    for (int i = 0; i < NPROC; i++) {
-        if (lk->lockreq[i] == prior_pid) {
-            lk->lockreq[i] = 0;
-            return 1;
-        }
+    for (int i = 0; i < lk->inqueue - 1; i++) {
+        lk->lockreq[i] = lk->lockreq[i + 1];
     }
-    return -1;
+    lk->lockreq[lk->inqueue - 1] = 0;
+    lk->inqueue--;
+
+    return 1;
 }
 
 void initprioritylock(struct prioritylock* lk, char* name) {

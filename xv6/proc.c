@@ -825,12 +825,12 @@ int chcritical(void) {
     acquirepriority(&pcritical.plock);
     pcritical.critical += 1;
 
-    long long int i, j;
-    
+    long long int i, j;    
     for (i = 0; i < 1e8; i++) {
         j = 0;
         while(j <= 1e7){
             if(j == 1e7) {
+                showlockqueue(&pcritical.plock);
                 releasepriority(&pcritical.plock);
                 return current_proc->pid;
             }
@@ -839,6 +839,5 @@ int chcritical(void) {
     }
    
     releasepriority(&pcritical.plock);
-
     return current_proc->pid;
 }
