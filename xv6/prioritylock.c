@@ -1,5 +1,3 @@
-// Priority locks
-
 #include "types.h"
 #include "defs.h"
 #include "param.h"
@@ -10,19 +8,24 @@
 #include "spinlock.h"
 #include "prioritylock.h"
 
+void show_queue(struct prioritylock* lk) {
+    for (int i = 0; i < NPROC; i++) {
+        if (lk->lockreq[i] != 0) {
+            
+        }
+    }
+}
+
 void enqueue(struct prioritylock* lk, int pid) {
-    acquire(&ptable.lock);
     for (int i = 0; i < NPROC; i++) {
         if (lk->lockreq[i] == 0) {
             lk->lockreq[i] = pid;
             break;
         }
     }
-    release(&ptable.lock);
 }
 
 int isprior(struct prioritylock* lk) {
-    acquire(&ptable.lock);
     int prior_pid = 0;
     for (int i = 0; i < NPROC; i++) {
         if (lk->lockreq[i] != 0 && (lk->lockreq[i] < prior_pid || prior_pid == 0)) {
@@ -31,21 +34,20 @@ int isprior(struct prioritylock* lk) {
     }
 
     if(prior_pid != myproc()->pid){
-        release(&ptable.lock);
         return 0;
     }
     
     for (int i = 0; i < NPROC; i++) {
         if (lk->lockreq[i] == prior_pid) {
             lk->lockreq[i] = 0;
-            release(&ptable.lock);
             return 1;
         }
     }
+    return -1;
 }
 
 void initprioritylock(struct prioritylock* lk, char* name) {
-    initlock(&lk->lk, "priority lock");
+    initlock(&lk->lk, "p_s_lock");
     lk->name = name;
     lk->locked = 0;
     lk->pid = 0;

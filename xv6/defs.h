@@ -10,6 +10,7 @@ struct sleeplock;
 struct stat;
 struct superblock;
 struct bjfparams;
+struct prioritylock;
 
 // bio.c
 void binit(void);
@@ -130,8 +131,9 @@ int init_queue(int);
 void aging(int);
 int set_bjs_proc(int, float, float, float, float);
 int set_bjs_sys(float, float, float, float);
-float procrank(struct bjfparams params);
+float procrank(struct bjfparams);
 int print_processes_infos(void);
+int chcritical(void);
 
 // swtch.S
 void swtch(struct context**, struct context*);
@@ -150,6 +152,13 @@ void acquiresleep(struct sleeplock*);
 void releasesleep(struct sleeplock*);
 int holdingsleep(struct sleeplock*);
 void initsleeplock(struct sleeplock*, char*);
+
+
+// prioritylock.c
+void initprioritylock(struct prioritylock*, char*);
+void acquirepriority(struct prioritylock*);
+void releasepriority(struct prioritylock*);
+
 
 // string.c
 int memcmp(const void*, const void*, uint);

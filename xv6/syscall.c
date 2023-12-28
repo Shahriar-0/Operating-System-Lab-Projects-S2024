@@ -115,7 +115,7 @@ extern int sys_chqueue(void);
 extern int sys_bjsproc(void);
 extern int sys_bjssys(void);
 extern int sys_procinfo(void);
-
+extern int sys_chcritical(void);
 
 static int (*syscalls[])(void) = {
     [SYS_fork] sys_fork,
@@ -147,6 +147,7 @@ static int (*syscalls[])(void) = {
     [SYS_bjsproc] sys_bjsproc,
     [SYS_bjssys] sys_bjssys,
     [SYS_procinfo] sys_procinfo,
+    [SYS_chcritical] sys_chcritical,
 };
 
 void syscall(void) {

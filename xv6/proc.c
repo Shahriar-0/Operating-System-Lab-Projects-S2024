@@ -6,11 +6,17 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "prioritylock.h"
 
 struct {
     struct spinlock lock;
     struct proc proc[NPROC];
 } ptable;
+
+static struct {
+    struct prioritylock plock;
+    int critical;
+} pcritical;
 
 static struct proc* initproc;
 
@@ -22,6 +28,7 @@ static void wakeup1(void* chan);
 
 void pinit(void) {
     initlock(&ptable.lock, "ptable");
+    initprioritylock(&pcritical.plock, "plock");
 }
 
 // Must be called with interrupts disabled
@@ -810,4 +817,16 @@ int droot(int n) {
         n = sum_digits;
     }
     return n;
+}
+
+int chcritical(void) {
+    acquirepriority(&pcritical.plock);
+    pcritical.critical += 1;
+    // int x = 1;
+    // for (int j = 0; j < 100; j++) 
+    //     for (long k = 0; k < 1000000000; k++)
+    //         x++;
+    releasepriority(&pcritical.plock);
+
+    return pcritical.critical;
 }

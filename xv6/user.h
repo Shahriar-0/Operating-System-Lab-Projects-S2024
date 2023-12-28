@@ -31,6 +31,7 @@ int chqueue(int, int);
 int bjsproc(int, float, float, float, float);
 int bjssys(float, float, float, float);
 int procinfo(void);
+int chcritical(void);
 
 typedef unsigned int uint; // i dunno but it doesn't compile without this
 // ulib.c
