@@ -123,3 +123,7 @@ int sys_bjssys(void) {
 int sys_procinfo(void) {
     return print_processes_infos();
 }
+
+int sys_chcritical(void) {
+    return chcritical();
+}

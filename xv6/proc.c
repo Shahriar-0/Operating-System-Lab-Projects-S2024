@@ -6,11 +6,17 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "prioritylock.h"
 
 struct {
     struct spinlock lock;
     struct proc proc[NPROC];
 } ptable;
+
+static struct {
+    struct prioritylock plock;
+    int critical;
+} pcritical;
 
 static struct proc* initproc;
 
@@ -22,6 +28,7 @@ static void wakeup1(void* chan);
 
 void pinit(void) {
     initlock(&ptable.lock, "ptable");
+    initprioritylock(&pcritical.plock, "plock");
 }
 
 // Must be called with interrupts disabled
@@ -345,7 +352,7 @@ int init_queue(int pid) {
     if (pid == 1 || pid == 2)
         queue = ROUND_ROBIN;
     else if (pid > 2)
-        queue = LCFS;
+        queue = ROUND_ROBIN;
     else
         return -1;
 
@@ -810,4 +817,28 @@ int droot(int n) {
         n = sum_digits;
     }
     return n;
+}
+
+int chcritical(void) {
+    struct proc* current_proc = myproc();
+    
+    acquirepriority(&pcritical.plock);
+    pcritical.critical += 1;
+
+    long long int i, j;    
+    for (i = 0; i < 1e8; i++) {
+        j = 0;
+        while(j <= 1e7){
+            if(j == 1e7) {
+                showlockqueue(&pcritical.plock);
+                cprintf("critical variable is %d\n", pcritical.critical);
+                releasepriority(&pcritical.plock);
+                return current_proc->pid;
+            }
+            j++;
+        }
+    }
+   
+    releasepriority(&pcritical.plock);
+    return current_proc->pid;
 }
