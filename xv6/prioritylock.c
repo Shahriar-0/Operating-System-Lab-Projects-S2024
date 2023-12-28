@@ -13,7 +13,7 @@ void showlockqueue(struct prioritylock* lk) {
     cprintf("[");
     for (int i = 0; i < lk->inqueue; i++) {
         cprintf("%d", lk->lockreq[i]);
-        if(i != lk->inqueue - 1)
+        if (i != lk->inqueue - 1)
             cprintf(", ");
     }
     cprintf("]\n");
@@ -21,24 +21,23 @@ void showlockqueue(struct prioritylock* lk) {
 }
 
 void enqueue(struct prioritylock* lk, int pid) {
-    if(lk->inqueue == NPROC)
+    if (lk->inqueue == NPROC)
         return;
 
     int pos = 0;
-    while(lk->lockreq[pos] > pid)
+    while (lk->lockreq[pos] > pid)
         pos++;
 
     for (int i = lk->inqueue; i > pos; i--) {
         lk->lockreq[i] = lk->lockreq[i - 1];
     }
-    
+
     lk->lockreq[pos] = pid;
     lk->inqueue++;
 }
 
 int isprior(struct prioritylock* lk) {
-
-    if(lk->inqueue == 0 || lk->lockreq[0] != myproc()->pid) {
+    if (lk->inqueue == 0 || lk->lockreq[0] != myproc()->pid) {
         return 0;
     }
 
@@ -61,15 +60,15 @@ void initprioritylock(struct prioritylock* lk, char* name) {
 
 void acquirepriority(struct prioritylock* lk) {
     enqueue(lk, myproc()->pid);
-    while (1){
+    while (1) {
         acquire(&lk->lk);
-        if(lk->locked == 1 || !isprior(lk)) {
+        if (lk->locked == 1 || !isprior(lk)) {
             release(&lk->lk);
             continue;
         }
         else
             break;
-    }    
+    }
     lk->locked = 1;
     lk->pid = myproc()->pid;
     release(&lk->lk);

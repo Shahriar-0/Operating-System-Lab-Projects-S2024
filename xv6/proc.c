@@ -821,15 +821,15 @@ int droot(int n) {
 
 int chcritical(void) {
     struct proc* current_proc = myproc();
-    
+
     acquirepriority(&pcritical.plock);
     pcritical.critical += 1;
 
-    long long int i, j;    
+    long long int i, j;
     for (i = 0; i < 1e8; i++) {
         j = 0;
-        while(j <= 1e7){
-            if(j == 1e7) {
+        while (j <= 1e7) {
+            if (j == 1e7) {
                 showlockqueue(&pcritical.plock);
                 cprintf("critical variable is %d\n", pcritical.critical);
                 releasepriority(&pcritical.plock);
@@ -838,7 +838,7 @@ int chcritical(void) {
             j++;
         }
     }
-   
+
     releasepriority(&pcritical.plock);
     return current_proc->pid;
 }

@@ -22,11 +22,10 @@
 #define SYS_close      21
 #define SYS_nuncle     22
 #define SYS_ptime      23
-#define SYS_fcopy      24 
+#define SYS_fcopy      24
 #define SYS_droot      25
 #define SYS_chqueue    26
 #define SYS_bjsproc    27
 #define SYS_bjssys     28
-#define SYS_procinfo   29 
+#define SYS_procinfo   29
 #define SYS_chcritical 30
- 

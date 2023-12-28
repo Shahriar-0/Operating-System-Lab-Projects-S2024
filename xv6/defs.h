@@ -153,7 +153,6 @@ void releasesleep(struct sleeplock*);
 int holdingsleep(struct sleeplock*);
 void initsleeplock(struct sleeplock*, char*);
 
-
 // prioritylock.c
 void initprioritylock(struct prioritylock*, char*);
 void acquirepriority(struct prioritylock*);
