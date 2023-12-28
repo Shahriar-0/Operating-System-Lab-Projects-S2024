@@ -352,7 +352,7 @@ int init_queue(int pid) {
     if (pid == 1 || pid == 2)
         queue = ROUND_ROBIN;
     else if (pid > 2)
-        queue = LCFS;
+        queue = ROUND_ROBIN;
     else
         return -1;
 
@@ -820,13 +820,25 @@ int droot(int n) {
 }
 
 int chcritical(void) {
+    struct proc* current_proc = myproc();
+    
     acquirepriority(&pcritical.plock);
     pcritical.critical += 1;
-    // int x = 1;
-    // for (int j = 0; j < 100; j++) 
-    //     for (long k = 0; k < 1000000000; k++)
-    //         x++;
+
+    long long int i, j;
+    
+    for (i = 0; i < 1e8; i++) {
+        j = 0;
+        while(j <= 1e7){
+            if(j == 1e7) {
+                releasepriority(&pcritical.plock);
+                return current_proc->pid;
+            }
+            j++;
+        }
+    }
+   
     releasepriority(&pcritical.plock);
 
-    return pcritical.critical;
+    return current_proc->pid;
 }

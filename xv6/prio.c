@@ -16,8 +16,8 @@ int main() {
         
             
     }
-    while(wait() != -1);
-    
+    while(wait() != -1)
+        ;
     
     exit();
 }
