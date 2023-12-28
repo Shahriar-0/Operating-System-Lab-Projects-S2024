@@ -1,4 +1,3 @@
-// #include "sleeplock.c"
 #include "types.h"
 #include "stat.h"
 #include "user.h"
@@ -6,18 +5,16 @@
 int main() {
 
     for(int i = 0; i < 10; i++) {
-        if(fork()){
-            continue;    
-        }
-        else {
-            printf(1, "%d\n", chcritical());
+        if(!fork()){
+            printf(1, "process with pid %d done!\n\n", chcritical());
             exit();
         }
-        
-            
+        else {
+            continue;
+        }
+
     }
-    while(wait() != -1)
-        ;
-        
+    while(wait() != -1);
+
     exit();
 }

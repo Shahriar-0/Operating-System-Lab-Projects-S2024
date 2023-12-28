@@ -831,6 +831,7 @@ int chcritical(void) {
         while(j <= 1e7){
             if(j == 1e7) {
                 showlockqueue(&pcritical.plock);
+                cprintf("critical variable is %d\n", pcritical.critical);
                 releasepriority(&pcritical.plock);
                 return current_proc->pid;
             }
