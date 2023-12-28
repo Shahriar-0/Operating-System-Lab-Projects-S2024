@@ -39,7 +39,6 @@ enum procstate { UNUSED,
                  RUNNING,
                  ZOMBIE };
 
-
 #define MAX_AGE 8000
 
 // schedule queue

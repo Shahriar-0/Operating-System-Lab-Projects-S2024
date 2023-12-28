@@ -151,18 +151,18 @@ int filecopy(struct inode* src, struct inode* dest) {
 
     // begin file system
     begin_op();
-    
+
     // limit access to working files
     ilock(src);
     ilock(dest);
 
-    // copy 
+    // copy
     uint offset = 0;
     int bytes_read;
     dest->size = 0;
-    while(1) {
+    while (1) {
         bytes_read = readi(src, buffer, offset, BUF_SIZE);
-        if(bytes_read == 0)
+        if (bytes_read == 0)
             break;
 
         dest->size += bytes_read;
@@ -178,7 +178,6 @@ int filecopy(struct inode* src, struct inode* dest) {
     // release files
     iunlockput(src);
     iunlockput(dest);
-
 
     return 0;
 }

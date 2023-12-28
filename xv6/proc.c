@@ -411,7 +411,7 @@ int set_bjs_proc(int pid, float priority_ratio, float arrival_time_ratio,
     }
     release(&ptable.lock);
 
-    if(!is_pid_exist)
+    if (!is_pid_exist)
         return -1;
     return 0;
 }

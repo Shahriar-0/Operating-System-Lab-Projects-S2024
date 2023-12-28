@@ -14,7 +14,7 @@ int rand() {
 
 void perform_computation(int i) {
     int x = 1;
-    for (int j = 0; j < i; j++) 
+    for (int j = 0; j < i; j++)
         for (long k = 0; k < 1000000000; k++)
             x++;
 }
@@ -25,8 +25,8 @@ int main() {
         if (pid > 0)
             continue;
         if (pid == 0) {
-            int sleep_time = rand() % 10000; 
-            sleep(sleep_time);       
+            int sleep_time = rand() % 10000;
+            sleep(sleep_time);
             perform_computation(i);
             exit();
         }

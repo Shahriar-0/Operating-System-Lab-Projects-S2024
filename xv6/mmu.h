@@ -1,6 +1,6 @@
 // This file contains definitions for the
 // x86 memory management unit (MMU).
-
+// clang-format off
 // Eflags register
 #define FL_IF 0x00000200 // Interrupt Enable
 
@@ -40,12 +40,12 @@ struct segdesc {
 };
 
 // Normal segment
-#define SEG(type, base, lim, dpl)                                    \
-    (struct segdesc) { ((lim) >> 12) & 0xffff, (uint)(base)&0xffff,  \
-                       ((uint)(base) >> 16) & 0xff, type, 1, dpl, 1, \
+#define SEG(type, base, lim, dpl)                                     \
+    (struct segdesc) { ((lim) >> 12) & 0xffff, (uint)(base) & 0xffff, \
+                       ((uint)(base) >> 16) & 0xff, type, 1, dpl, 1,  \
                        (uint)(lim) >> 28, 0, 0, 1, 1, (uint)(base) >> 24 }
 #define SEG16(type, base, lim, dpl)                                  \
-    (struct segdesc) { (lim) & 0xffff, (uint)(base)&0xffff,          \
+    (struct segdesc) { (lim) & 0xffff, (uint)(base) & 0xffff,        \
                        ((uint)(base) >> 16) & 0xff, type, 1, dpl, 1, \
                        (uint)(lim) >> 16, 0, 0, 1, 0, (uint)(base) >> 24 }
 #endif
@@ -98,7 +98,7 @@ struct segdesc {
 
 // Address in page table or page directory entry
 #define PTE_ADDR(pte)  ((uint)(pte) & ~0xFFF)
-#define PTE_FLAGS(pte) ((uint)(pte)&0xFFF)
+#define PTE_FLAGS(pte) ((uint)(pte) & 0xFFF)
 
 #ifndef __ASSEMBLER__
 typedef uint pte_t;
@@ -167,7 +167,7 @@ struct gatedesc {
 //        this interrupt/trap gate explicitly using an int instruction.
 #define SETGATE(gate, istrap, sel, off, d)            \
     {                                                 \
-        (gate).off_15_0 = (uint)(off)&0xffff;         \
+        (gate).off_15_0 = (uint)(off) & 0xffff;       \
         (gate).cs = (sel);                            \
         (gate).args = 0;                              \
         (gate).rsv1 = 0;                              \
@@ -179,3 +179,5 @@ struct gatedesc {
     }
 
 #endif
+
+// clang-format on

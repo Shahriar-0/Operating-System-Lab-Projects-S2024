@@ -414,29 +414,28 @@ int sys_pipe(void) {
     return 0;
 }
 
-
 int sys_fcopy(void) {
-    char* src_path, *dest_path;
-    if(argstr(0, &src_path) < 0 || argstr(1, &dest_path) < 0) {
+    char *src_path, *dest_path;
+    if (argstr(0, &src_path) < 0 || argstr(1, &dest_path) < 0) {
         return -1;
     }
 
     begin_op();
     struct inode* src = namei(src_path);
     struct inode* dest = namei(dest_path);
-    if(src == 0){
+    if (src == 0) {
         cprintf("source file does not exist!\n");
         return -1;
     }
-    if(src == dest) {
+    if (src == dest) {
         cprintf("a file can not be copy at itself!\n");
         end_op();
         return -1;
     }
-    else if(dest == 0) {
+    else if (dest == 0) {
         dest = create(dest_path, T_FILE, 0, 0);
         iunlock(dest);
-        if(dest == 0) {
+        if (dest == 0) {
             end_op();
             return -1;
         }

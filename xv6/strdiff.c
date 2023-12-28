@@ -24,7 +24,7 @@ char* to_lower(char* word) {
     return lower_word;
 }
 
-// getting difference of two strings (0 for each character in first being greater than or equal to 
+// getting difference of two strings (0 for each character in first being greater than or equal to
 // the corresponding character in second, 1 otherwise)
 int strdiff(char* str1, char* str2) {
     str1 = to_lower(str1);
