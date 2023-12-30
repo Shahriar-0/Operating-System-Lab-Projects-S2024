@@ -124,6 +124,19 @@ int sys_procinfo(void) {
     return print_processes_infos();
 }
 
-int sys_chcritical(void) {
-    return chcritical();
+
+int sys_pacquire(void) {
+    return pacquire();
+}
+
+int sys_prelease(void) {
+    return prelease();
+}
+
+int sys_pqueue(void) {
+    return pqueue();
+}
+
+int sys_nsyscalls(void) {
+    return nsyscalls();
 }

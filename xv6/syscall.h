@@ -28,4 +28,7 @@
 #define SYS_bjsproc    27
 #define SYS_bjssys     28
 #define SYS_procinfo   29
-#define SYS_chcritical 30
+#define SYS_pacquire   30
+#define SYS_prelease   31
+#define SYS_pqueue     32
+#define SYS_nsyscalls  33

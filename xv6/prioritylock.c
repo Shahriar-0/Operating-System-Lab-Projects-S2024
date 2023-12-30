@@ -80,6 +80,17 @@ void releasepriority(struct prioritylock* lk) {
     release(&lk->lk);
 }
 
+
+
+int isprioritylocked(struct prioritylock* lk) {
+    int r;
+
+    acquire(&lk->lk);
+    r = lk->locked;
+    release(&lk->lk);
+    return r;
+}
+
 int holdingpriority(struct prioritylock* lk) {
     int r;
 

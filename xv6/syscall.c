@@ -6,12 +6,22 @@
 #include "proc.h"
 #include "x86.h"
 #include "syscall.h"
+#include "spinlock.h"
 
 // User code makes a system call with INT T_SYSCALL.
 // System call number in %eax.
 // Arguments on the stack, from the user call to the C
 // library system call function. The saved user %esp points
 // to a saved program counter, and then the first argument.
+
+//number of total system calls which has been called
+static struct {
+    struct spinlock lock;
+    int n;
+} totalsyscalls;
+
+// extern totalsyscalls;
+
 
 // Fetch the int at addr from the current process.
 int fetchint(uint addr, int* ip) {
@@ -115,7 +125,10 @@ extern int sys_chqueue(void);
 extern int sys_bjsproc(void);
 extern int sys_bjssys(void);
 extern int sys_procinfo(void);
-extern int sys_chcritical(void);
+extern int sys_pacquire(void);
+extern int sys_prelease(void);
+extern int sys_pqueue(void);
+extern int sys_nsyscalls(void);
 
 static int (*syscalls[])(void) = {
     [SYS_fork] sys_fork,
@@ -147,7 +160,10 @@ static int (*syscalls[])(void) = {
     [SYS_bjsproc] sys_bjsproc,
     [SYS_bjssys] sys_bjssys,
     [SYS_procinfo] sys_procinfo,
-    [SYS_chcritical] sys_chcritical,
+    [SYS_pacquire] sys_pacquire,
+    [SYS_prelease] sys_prelease,
+    [SYS_pqueue] sys_pqueue,
+    [SYS_nsyscalls] sys_nsyscalls,
 };
 
 void syscall(void) {
@@ -163,4 +179,28 @@ void syscall(void) {
                 curproc->pid, curproc->name, num);
         curproc->tf->eax = -1;
     }
+    cli();
+    int CPUid = cpuid();
+    sti();
+    cpus[CPUid].nsyscall++;
+    acquire(&totalsyscalls.lock);
+    totalsyscalls.n++;
+    release(&totalsyscalls.lock);
+}
+
+void getnsyscall(void) {
+    acquire(&totalsyscalls.lock);
+    cprintf("%d, %d, %d, %d, %d\n",
+        cpus[0].nsyscall,
+        cpus[1].nsyscall,
+        cpus[2].nsyscall,
+        cpus[3].nsyscall,
+        totalsyscalls.n
+    );
+    totalsyscalls.n = 0;
+    release(&totalsyscalls.lock);
+    cpus[0].nsyscall = 0;
+    cpus[1].nsyscall = 0;
+    cpus[2].nsyscall = 0;
+    cpus[3].nsyscall = 0;
 }

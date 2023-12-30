@@ -1,19 +1,66 @@
+#include "fcntl.h"
 #include "types.h"
-#include "stat.h"
 #include "user.h"
 
-int main() {
-    for (int i = 0; i < 10; i++) {
-        if (!fork()) {
-            printf(1, "process with pid %d done!\n\n", chcritical());
-            exit();
-        }
-        else {
-            continue;
-        }
+void intToChar(int num, char* str) {
+    if (num == 0) {
+        str[0] = '0';
+        return;
     }
-    while (wait() != -1)
-        ;
 
+    int temp = num;
+    uint len = 0;
+
+    while (temp != 0) {
+        temp /= 10;
+        len++;
+    }
+
+    if (num < 0) {
+        str[0] = '-';
+        num = -num;
+    }
+
+    uint i = len - 1;
+
+    while (num != 0) {
+        str[i] = '0' + (num % 10);
+        num /= 10;
+        i--;
+    }
+}
+
+
+int main() {
+    // char buffer[6];
+
+    // for (int i = 0; i < 10; i++) {
+    //     if (!fork()) {
+    //         int pid = pacquire();
+    //         long long int j;
+    //         j = 0;
+    //         while (j <= 1e7) {
+    //             if (j == 1e7) {
+    //                 pqueue();
+    //                 memset(buffer, 0, 6);
+    //                 intToChar(pid, buffer);
+    //                 printf(1, "process %d done!\n", pid);
+    //                 int fd = open("./plock.txt", O_CREATE | O_WRONLY);
+    //                 write(fd, buffer, strlen(buffer));
+    //                 close(fd);
+    //                 prelease();
+    //             }
+    //             j++;
+            
+    //         }
+    //         exit();
+    //     }
+    //     else {
+    //         continue;
+    //     }
+    // }
+    // while (wait() != -1)
+    //     ;    
+    nsyscalls();
     exit();
 }

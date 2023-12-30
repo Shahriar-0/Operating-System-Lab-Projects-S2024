@@ -13,10 +13,9 @@ struct {
     struct proc proc[NPROC];
 } ptable;
 
-static struct {
-    struct prioritylock plock;
-    int critical;
-} pcritical;
+
+struct prioritylock plock;
+
 
 static struct proc* initproc;
 
@@ -28,7 +27,7 @@ static void wakeup1(void* chan);
 
 void pinit(void) {
     initlock(&ptable.lock, "ptable");
-    initprioritylock(&pcritical.plock, "plock");
+    initprioritylock(&plock, "plock");
 }
 
 // Must be called with interrupts disabled
@@ -250,6 +249,10 @@ void exit(void) {
     struct proc* curproc = myproc();
     struct proc* p;
     int fd;
+
+    // 
+    if(holdingpriority(&plock))
+        releasepriority(&plock);
 
     if (curproc == initproc)
         panic("init exiting");
@@ -819,26 +822,26 @@ int droot(int n) {
     return n;
 }
 
-int chcritical(void) {
-    struct proc* current_proc = myproc();
+int nsyscalls(void) {
+    getnsyscall();
+    return 0;
+}
 
-    acquirepriority(&pcritical.plock);
-    pcritical.critical += 1;
+int pacquire(void) {
+    if(holdingpriority(&plock))
+        return -1;
+    acquirepriority(&plock);
+    return myproc()->pid;
+}
 
-    long long int i, j;
-    for (i = 0; i < 1e8; i++) {
-        j = 0;
-        while (j <= 1e7) {
-            if (j == 1e7) {
-                showlockqueue(&pcritical.plock);
-                cprintf("critical variable is %d\n", pcritical.critical);
-                releasepriority(&pcritical.plock);
-                return current_proc->pid;
-            }
-            j++;
-        }
-    }
+int prelease(void) {
+    if(!isprioritylocked(&plock))
+        return -1;
+    releasepriority(&plock);
+    return 0;
+}
 
-    releasepriority(&pcritical.plock);
-    return current_proc->pid;
+int pqueue(void) {
+    showlockqueue(&plock);
+    return 0;
 }

@@ -133,7 +133,10 @@ int set_bjs_proc(int, float, float, float, float);
 int set_bjs_sys(float, float, float, float);
 float procrank(struct bjfparams);
 int print_processes_infos(void);
-int chcritical(void);
+int pacquire(void);
+int prelease(void);
+int pqueue(void);
+int nsyscalls(void);
 
 // swtch.S
 void swtch(struct context**, struct context*);
@@ -158,6 +161,8 @@ void initprioritylock(struct prioritylock*, char*);
 void acquirepriority(struct prioritylock*);
 void releasepriority(struct prioritylock*);
 void showlockqueue(struct prioritylock*);
+int isprioritylocked(struct prioritylock*);
+int holdingpriority(struct prioritylock*);
 
 // string.c
 int memcmp(const void*, const void*, uint);
@@ -177,6 +182,7 @@ int fetchint(uint, int*);
 int fetchstr(uint, char**);
 int fetchfloat(uint, float*);
 void syscall(void);
+void getnsyscall(void);
 
 // timer.c
 void timerinit(void);
