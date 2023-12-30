@@ -30,7 +30,6 @@ void intToChar(int num, char* str) {
     }
 }
 
-
 int main() {
     char buffer[6];
 
@@ -39,28 +38,25 @@ int main() {
             int pid = pacquire();
             long long int j;
             j = 0;
-            while (j <= 1e7) {
-                if (j == 1e7) {
-                    pqueue();
-                    memset(buffer, 0, 6);
-                    intToChar(pid, buffer);
-                    printf(1, "process %d done!\n", pid);
-                    int fd = open("./plock.txt", O_CREATE | O_WRONLY);
-                    write(fd, buffer, strlen(buffer));
-                    close(fd);
-                    prelease();
-                }
-                j++;
-            
+            for (j = 0; j <= 1e7; j++) {
+                if (j < 1e7)
+                    continue;
+                pqueue();
+                memset(buffer, 0, 6);
+                intToChar(pid, buffer);
+                printf(1, "process %d done!\n", pid);
+                int fd = open("./plock.txt", O_CREATE | O_WRONLY);
+                write(fd, buffer, strlen(buffer));
+                close(fd);
+                prelease();
             }
             exit();
         }
-        else {
+        else
             continue;
-        }
     }
     while (wait() != -1)
-        ;    
+        ;
 
     exit();
 }
