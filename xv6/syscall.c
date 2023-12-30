@@ -6,7 +6,7 @@
 #include "proc.h"
 #include "x86.h"
 #include "syscall.h"
-#include "spinlock.h"
+#include "mp.h"
 
 // User code makes a system call with INT T_SYSCALL.
 // System call number in %eax.
@@ -14,14 +14,7 @@
 // library system call function. The saved user %esp points
 // to a saved program counter, and then the first argument.
 
-//number of total system calls which has been called
-static struct {
-    struct spinlock lock;
-    int n;
-} totalsyscalls;
-
-// extern totalsyscalls;
-
+struct nsyslock nsys;
 
 // Fetch the int at addr from the current process.
 int fetchint(uint addr, int* ip) {
@@ -183,24 +176,22 @@ void syscall(void) {
     int CPUid = cpuid();
     sti();
     cpus[CPUid].nsyscall++;
-    acquire(&totalsyscalls.lock);
-    totalsyscalls.n++;
-    release(&totalsyscalls.lock);
+    acquire(&nsys.lk);
+    nsys.n++;
+    release(&nsys.lk);
 }
 
 void getnsyscall(void) {
-    acquire(&totalsyscalls.lock);
-    cprintf("%d, %d, %d, %d, %d\n",
+    cprintf("%d, %d, %d, %d, ",
         cpus[0].nsyscall,
         cpus[1].nsyscall,
         cpus[2].nsyscall,
-        cpus[3].nsyscall,
-        totalsyscalls.n
+        cpus[3].nsyscall
     );
-    totalsyscalls.n = 0;
-    release(&totalsyscalls.lock);
-    cpus[0].nsyscall = 0;
-    cpus[1].nsyscall = 0;
-    cpus[2].nsyscall = 0;
-    cpus[3].nsyscall = 0;
+    acquire(&nsys.lk);
+    cprintf("%d\n",
+        nsys.n
+    );
+    release(&nsys.lk);
+
 }

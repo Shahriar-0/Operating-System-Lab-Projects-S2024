@@ -2,20 +2,27 @@
 #include "types.h"
 #include "user.h"
 
+#define BUFSIZE 512
+
+#define NPROCESS 10
+
 int main() {
-    for (int i = 0; i < 10; i++) {
+    unlink("ns.txt");
+    int fd = open("ns.txt", O_CREATE | O_WRONLY);
+
+    for (int i = 0; i < NPROCESS; i++) {
         if (!fork()) {
-       
-            int fd = open("./nsyscalltest.txt", O_CREATE | O_WRONLY);
-            write(fd, "G17\0", 4);
-            close(fd);
+            write(fd, "G#17", 4);
             exit();
         }
         else 
             continue;
     }
-    while (wait() != -1)
-        ;  
+    for (int i = 0; i < NPROCESS; i++)
+        wait();
+
+    write(fd, "\n", 1);
+    close(fd);
     nsyscalls();
     exit();
 }

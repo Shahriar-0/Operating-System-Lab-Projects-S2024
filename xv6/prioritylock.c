@@ -80,8 +80,6 @@ void releasepriority(struct prioritylock* lk) {
     release(&lk->lk);
 }
 
-
-
 int isprioritylocked(struct prioritylock* lk) {
     int r;
 

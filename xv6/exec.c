@@ -6,6 +6,7 @@
 #include "defs.h"
 #include "x86.h"
 #include "elf.h"
+#include "mp.h"
 
 int exec(char* path, char** argv) {
     char *s, *last;
@@ -99,6 +100,14 @@ int exec(char* path, char** argv) {
     curproc->tf->esp = sp;
     switchuvm(curproc);
     freevm(oldpgdir);
+    
+    acquire(&nsys.lk);
+    nsys.n = 0;
+    release(&nsys.lk);
+    cpus[0].nsyscall = 0;
+    cpus[1].nsyscall = 0;
+    cpus[2].nsyscall = 0;
+    cpus[3].nsyscall = 0;
     return 0;
 
 bad:

@@ -1,5 +1,13 @@
 // See MultiProcessor Specification Version 1.[14]
 
+#include "spinlock.h"
+//number of total system calls which has been called
+struct nsyslock {
+    struct spinlock lk;
+    int n;
+};
+extern struct nsyslock nsys;
+
 struct mp {             // floating pointer
     uchar signature[4]; // "_MP_"
     void* physaddr;     // phys addr of MP config table

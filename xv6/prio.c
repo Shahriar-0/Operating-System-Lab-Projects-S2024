@@ -30,26 +30,26 @@ void intToChar(int num, char* str) {
     }
 }
 
-int main() {
-    char buffer[6];
+#define NPROCESS 10
+#define NUMBUF 7
 
-    for (int i = 0; i < 10; i++) {
+int main() {
+    char numstr[NUMBUF];
+    unlink("plock.txt");
+    int fd = open("plock.txt", O_CREATE | O_WRONLY);
+    for (int i = 0; i < NPROCESS; i++) {
         if (!fork()) {
             int pid = pacquire();
-            long long int j;
-            j = 0;
-            for (j = 0; j <= 1e7; j++) {
-                if (j < 1e7)
-                    continue;
-                pqueue();
-                memset(buffer, 0, 6);
-                intToChar(pid, buffer);
-                printf(1, "process %d done!\n", pid);
-                int fd = open("./plock.txt", O_CREATE | O_WRONLY);
-                write(fd, buffer, strlen(buffer));
-                close(fd);
-                prelease();
-            }
+            sleep(100);
+            pqueue();
+
+            memset(numstr, 0, NUMBUF);
+            intToChar(pid, numstr);
+            numstr[strlen(numstr)] = '-';
+            write(fd, numstr, strlen(numstr));
+            printf(1, "process %d done!\n", pid);
+
+            prelease();        
             exit();
         }
         else
@@ -58,5 +58,7 @@ int main() {
     while (wait() != -1)
         ;
 
+    write(fd, "\n", 1);
+    close(fd);
     exit();
 }
