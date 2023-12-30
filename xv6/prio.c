@@ -32,35 +32,35 @@ void intToChar(int num, char* str) {
 
 
 int main() {
-    // char buffer[6];
+    char buffer[6];
 
-    // for (int i = 0; i < 10; i++) {
-    //     if (!fork()) {
-    //         int pid = pacquire();
-    //         long long int j;
-    //         j = 0;
-    //         while (j <= 1e7) {
-    //             if (j == 1e7) {
-    //                 pqueue();
-    //                 memset(buffer, 0, 6);
-    //                 intToChar(pid, buffer);
-    //                 printf(1, "process %d done!\n", pid);
-    //                 int fd = open("./plock.txt", O_CREATE | O_WRONLY);
-    //                 write(fd, buffer, strlen(buffer));
-    //                 close(fd);
-    //                 prelease();
-    //             }
-    //             j++;
+    for (int i = 0; i < 10; i++) {
+        if (!fork()) {
+            int pid = pacquire();
+            long long int j;
+            j = 0;
+            while (j <= 1e7) {
+                if (j == 1e7) {
+                    pqueue();
+                    memset(buffer, 0, 6);
+                    intToChar(pid, buffer);
+                    printf(1, "process %d done!\n", pid);
+                    int fd = open("./plock.txt", O_CREATE | O_WRONLY);
+                    write(fd, buffer, strlen(buffer));
+                    close(fd);
+                    prelease();
+                }
+                j++;
             
-    //         }
-    //         exit();
-    //     }
-    //     else {
-    //         continue;
-    //     }
-    // }
-    // while (wait() != -1)
-    //     ;    
-    nsyscalls();
+            }
+            exit();
+        }
+        else {
+            continue;
+        }
+    }
+    while (wait() != -1)
+        ;    
+
     exit();
 }
