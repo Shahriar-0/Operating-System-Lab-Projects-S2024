@@ -162,7 +162,7 @@ void acquirepriority(struct prioritylock*);
 void releasepriority(struct prioritylock*);
 void showlockqueue(struct prioritylock*);
 int isprioritylocked(struct prioritylock*);
-int holdingpriority(struct prioritylock*);
+int isholdingpriority(struct prioritylock*);
 
 // string.c
 int memcmp(const void*, const void*, uint);

@@ -89,7 +89,7 @@ int isprioritylocked(struct prioritylock* lk) {
     return r;
 }
 
-int holdingpriority(struct prioritylock* lk) {
+int isholdingpriority(struct prioritylock* lk) {
     int r;
 
     acquire(&lk->lk);
