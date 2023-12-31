@@ -29,6 +29,11 @@ void acquiresleep(struct sleeplock* lk) {
 
 void releasesleep(struct sleeplock* lk) {
     acquire(&lk->lk);
+
+    // only the process that acquired the lock can release it
+    if (lk->locked == 0 || lk->pid != myproc()->pid)
+        return;
+
     lk->locked = 0;
     lk->pid = 0;
     wakeup(lk);

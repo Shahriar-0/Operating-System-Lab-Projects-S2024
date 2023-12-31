@@ -13,9 +13,7 @@ struct {
     struct proc proc[NPROC];
 } ptable;
 
-
 struct prioritylock plock;
-
 
 static struct proc* initproc;
 
@@ -250,8 +248,8 @@ void exit(void) {
     struct proc* p;
     int fd;
 
-    // 
-    if(holdingpriority(&plock))
+    //
+    if (isholdingpriority(&plock))
         releasepriority(&plock);
 
     if (curproc == initproc)
@@ -828,14 +826,14 @@ int nsyscalls(void) {
 }
 
 int pacquire(void) {
-    if(holdingpriority(&plock))
+    if (isholdingpriority(&plock))
         return -1;
     acquirepriority(&plock);
     return myproc()->pid;
 }
 
 int prelease(void) {
-    if(!isprioritylocked(&plock))
+    if (!isholdingpriority(&plock))
         return -1;
     releasepriority(&plock);
     return 0;

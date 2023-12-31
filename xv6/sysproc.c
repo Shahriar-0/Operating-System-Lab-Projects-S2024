@@ -124,7 +124,6 @@ int sys_procinfo(void) {
     return print_processes_infos();
 }
 
-
 int sys_pacquire(void) {
     return pacquire();
 }

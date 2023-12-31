@@ -183,15 +183,12 @@ void syscall(void) {
 
 void getnsyscall(void) {
     cprintf("%d, %d, %d, %d, ",
-        cpus[0].nsyscall,
-        cpus[1].nsyscall,
-        cpus[2].nsyscall,
-        cpus[3].nsyscall
-    );
+            cpus[0].nsyscall,
+            cpus[1].nsyscall,
+            cpus[2].nsyscall,
+            cpus[3].nsyscall);
     acquire(&nsys.lk);
     cprintf("%d\n",
-        nsys.n
-    );
+            nsys.n);
     release(&nsys.lk);
-
 }
