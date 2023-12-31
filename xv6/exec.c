@@ -100,7 +100,7 @@ int exec(char* path, char** argv) {
     curproc->tf->esp = sp;
     switchuvm(curproc);
     freevm(oldpgdir);
-    
+
     acquire(&nsys.lk);
     nsys.n = 0;
     release(&nsys.lk);

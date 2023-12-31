@@ -31,7 +31,7 @@ void intToChar(int num, char* str) {
 }
 
 #define NPROCESS 10
-#define NUMBUF 7
+#define NUMBUF   7
 
 int main() {
     char numstr[NUMBUF];
@@ -49,7 +49,7 @@ int main() {
             write(fd, numstr, strlen(numstr));
             printf(1, "process %d done!\n", pid);
 
-            prelease();        
+            prelease();
             exit();
         }
         else

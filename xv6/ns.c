@@ -15,7 +15,7 @@ int main() {
             write(fd, "G#17", 4);
             exit();
         }
-        else 
+        else
             continue;
     }
     for (int i = 0; i < NPROCESS; i++)

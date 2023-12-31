@@ -1,7 +1,7 @@
 // See MultiProcessor Specification Version 1.[14]
 
 #include "spinlock.h"
-//number of total system calls which has been called
+// number of total system calls which has been called
 struct nsyslock {
     struct spinlock lk;
     int n;
