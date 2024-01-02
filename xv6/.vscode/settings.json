@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "type_traits": "c",
-        "stdio.h": "c",
-        "types.h": "c",
-        "user.h": "c"
-    },
-    "C_Cpp.errorSquiggles": "disabled"
-}
