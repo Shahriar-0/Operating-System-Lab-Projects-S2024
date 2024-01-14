@@ -378,7 +378,6 @@ struct shpage {
 struct shmemtable {
     struct shpage pages[NSHPAGE];
     struct spinlock lock;
-
 } shmemtable;
 
 char* openshmem(int id) {
