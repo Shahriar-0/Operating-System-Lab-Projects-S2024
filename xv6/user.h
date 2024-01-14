@@ -35,7 +35,7 @@ int pacquire(void);
 int prelease(void);
 int pqueue(void);
 int nsyscalls(void);
-void* openshmem(int);
+char* openshmem(int);
 
 typedef unsigned int uint; // i dunno but it doesn't compile without this
 // ulib.c

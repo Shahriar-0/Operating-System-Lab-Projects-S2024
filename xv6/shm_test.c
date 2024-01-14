@@ -6,18 +6,15 @@
 
 void test_shm(void) {
     char* adr = openshmem(25);
-    *adr = 10;
-    // printf(1, "%p\n", adr);
-    printf(1, "%d\n", *adr);
+    adr[0] = 10;
+    printf(1, "%d\n", adr[0]);
 
     for (int i = 0; i < NPROCESS; i++) {
         if (!fork()) {
-            sleep(100);
-            char* adr = openshmem(25);
-            *adr += 1;
-            printf(1, "%d\n", *adr);
-            // printf(1, "%p\n", adr);
-
+            sleep(100 * i);
+            char* adrs = openshmem(25);
+            adrs[0] += 1;
+            printf(1, "%d\n", adrs[0]);
             exit();
         }
     }

@@ -372,7 +372,7 @@ int copyout(pde_t* pgdir, uint va, void* p, uint len) {
 struct shpage {
     int id;
     int n_access;
-    void* physicalAddr;
+    uint physicalAddr;
 };
 
 struct shmtable {
@@ -381,7 +381,7 @@ struct shmtable {
 
 } shmtable;
 
-void* openshmem(int id) {
+char* openshmem(int id) {
     struct proc* proc = myproc();
     acquire(&shmtable.lock);
     int size = PGSIZE;
@@ -389,13 +389,14 @@ void* openshmem(int id) {
     for (int i = 0; i < NSHPAGE; i++) {
         if (shmtable.pages[i].id == id) {
             shmtable.pages[i].n_access++;
-            void* vaddr = (void*)proc->sz;
-            if (mappages(proc->pgdir, vaddr, PGSIZE, (uint)shmtable.pages[i].physicalAddr,
+            char* vaddr = (char*)PGROUNDUP(proc->sz);
+            if (mappages(proc->pgdir, vaddr, PGSIZE, shmtable.pages[i].physicalAddr,
                          PTE_W | PTE_U) < 0) {
                 cprintf("err\n");
             }
             proc->sz += size;
             release(&shmtable.lock);
+            cprintf("passed\n");
             return vaddr;
         }
     }
@@ -422,9 +423,9 @@ void* openshmem(int id) {
     }
 
     memset(paddr, 0, PGSIZE);
-    void* vaddr = (void*)proc->sz;
-    shmtable.pages[pgidx].physicalAddr = (void*)V2P(paddr);
-    if (mappages(proc->pgdir, vaddr, PGSIZE, (uint)shmtable.pages[pgidx].physicalAddr,
+    char* vaddr = (char*)PGROUNDUP(proc->sz);
+    shmtable.pages[pgidx].physicalAddr = (uint)V2P(paddr);
+    if (mappages(proc->pgdir, vaddr, PGSIZE, shmtable.pages[pgidx].physicalAddr,
                  PTE_W | PTE_U) < 0) {
         cprintf("err\n");
     }
