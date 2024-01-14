@@ -6,6 +6,7 @@
 #include "mmu.h"
 #include "proc.h"
 #include "elf.h"
+#include "spinlock.h"
 
 extern char data[]; // defined by kernel.ld
 pde_t* kpgdir;      // for use in scheduler()
@@ -364,3 +365,71 @@ int copyout(pde_t* pgdir, uint va, void* p, uint len) {
 //  Blank page.
 // PAGEBREAK!
 //  Blank page.
+
+
+// shared memory
+#define NSHPAGE 64
+#define HEAPLIMIT 0x7F000000 
+struct shpage {
+    int id;
+    int n_access;
+    void* physicalAddr;
+    char* virtualAddr;
+};
+
+struct shmtable {
+    struct shpage pages[NSHPAGE];
+    struct spinlock lock;
+
+} shmtable;
+
+void* openshmem(int id) {
+    struct proc *proc = myproc();
+    acquire(&shmtable.lock);
+    int size = PGSIZE;
+
+    for(int i = 0; i < NSHPAGE; i++) {
+        if(shmtable.pages[i].id == id) {
+            shmtable.pages[i].n_access++;
+            release(&shmtable.lock);
+            cprintf("passed\n");
+            return shmtable.pages[i].virtualAddr - size;
+        }
+    }
+
+    
+    int pgidx = -1;
+    for(int i = 0; i < NSHPAGE; i++) {
+        if(shmtable.pages[i].id == 0) {
+            shmtable.pages[i].id = id;
+            pgidx = i;
+            break;
+        }
+    }
+    if(pgidx == -1) {
+        cprintf("shmget: pages are full\n");
+        release(&shmtable.lock);
+        return 0;
+    }
+
+    char* paddr = kalloc();
+    if(paddr == 0){
+        cprintf("shmget: out of memory\n");
+        release(&shmtable.lock);
+        return 0;
+    }
+
+    memset(paddr, 0, PGSIZE);
+    shmtable.pages[pgidx].virtualAddr = (char*)allocuvm(proc->pgdir, proc->sz, proc->sz + size);
+    shmtable.pages[pgidx].physicalAddr = (void*)V2P(paddr);
+    if(mappages(
+        proc->pgdir, (void*)shmtable.pages[pgidx].virtualAddr, PGSIZE, 
+        (uint)shmtable.pages[pgidx].physicalAddr, PTE_W | PTE_U) < 0) {
+
+            cprintf("err\n");
+        }
+    
+    release(&shmtable.lock);
+    cprintf("created\n");
+    return shmtable.pages[pgidx].virtualAddr - size;
+}

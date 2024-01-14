@@ -139,3 +139,13 @@ int sys_pqueue(void) {
 int sys_nsyscalls(void) {
     return nsyscalls();
 }
+
+char* sys_openshmem(void) {
+    int id;
+    if (argint(0, &id) < 0) {
+        cprintf("err\n");
+        return 0;
+    }
+
+    return openshmem(id);
+}

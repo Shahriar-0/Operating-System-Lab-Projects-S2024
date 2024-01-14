@@ -122,6 +122,7 @@ extern int sys_pacquire(void);
 extern int sys_prelease(void);
 extern int sys_pqueue(void);
 extern int sys_nsyscalls(void);
+extern int sys_openshmem(void);
 
 static int (*syscalls[])(void) = {
     [SYS_fork] sys_fork,
@@ -157,6 +158,7 @@ static int (*syscalls[])(void) = {
     [SYS_prelease] sys_prelease,
     [SYS_pqueue] sys_pqueue,
     [SYS_nsyscalls] sys_nsyscalls,
+    [SYS_openshmem] sys_openshmem,
 };
 
 void syscall(void) {

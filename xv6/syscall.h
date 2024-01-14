@@ -32,3 +32,4 @@
 #define SYS_prelease  31
 #define SYS_pqueue    32
 #define SYS_nsyscalls 33
+#define SYS_openshmem 34
