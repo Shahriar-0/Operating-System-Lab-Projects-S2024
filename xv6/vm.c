@@ -366,15 +366,13 @@ int copyout(pde_t* pgdir, uint va, void* p, uint len) {
 // PAGEBREAK!
 //  Blank page.
 
-
 // shared memory
-#define NSHPAGE 64
-#define HEAPLIMIT 0x7F000000 
+#define NSHPAGE   64
+#define HEAPLIMIT 0x7F000000
 struct shpage {
     int id;
     int n_access;
     void* physicalAddr;
-    char* virtualAddr;
 };
 
 struct shmtable {
@@ -384,52 +382,55 @@ struct shmtable {
 } shmtable;
 
 void* openshmem(int id) {
-    struct proc *proc = myproc();
+    struct proc* proc = myproc();
     acquire(&shmtable.lock);
     int size = PGSIZE;
 
-    for(int i = 0; i < NSHPAGE; i++) {
-        if(shmtable.pages[i].id == id) {
+    for (int i = 0; i < NSHPAGE; i++) {
+        if (shmtable.pages[i].id == id) {
             shmtable.pages[i].n_access++;
+            void* vaddr = (void*)proc->sz;
+            if (mappages(proc->pgdir, vaddr, PGSIZE, (uint)shmtable.pages[i].physicalAddr,
+                         PTE_W | PTE_U) < 0) {
+                cprintf("err\n");
+            }
+            proc->sz += size;
             release(&shmtable.lock);
-            cprintf("passed\n");
-            return shmtable.pages[i].virtualAddr - size;
+            return vaddr;
         }
     }
 
-    
     int pgidx = -1;
-    for(int i = 0; i < NSHPAGE; i++) {
-        if(shmtable.pages[i].id == 0) {
+    for (int i = 0; i < NSHPAGE; i++) {
+        if (shmtable.pages[i].id == 0) {
             shmtable.pages[i].id = id;
             pgidx = i;
             break;
         }
     }
-    if(pgidx == -1) {
+    if (pgidx == -1) {
         cprintf("shmget: pages are full\n");
         release(&shmtable.lock);
         return 0;
     }
 
     char* paddr = kalloc();
-    if(paddr == 0){
+    if (paddr == 0) {
         cprintf("shmget: out of memory\n");
         release(&shmtable.lock);
         return 0;
     }
 
     memset(paddr, 0, PGSIZE);
-    shmtable.pages[pgidx].virtualAddr = (char*)allocuvm(proc->pgdir, proc->sz, proc->sz + size);
+    void* vaddr = (void*)proc->sz;
     shmtable.pages[pgidx].physicalAddr = (void*)V2P(paddr);
-    if(mappages(
-        proc->pgdir, (void*)shmtable.pages[pgidx].virtualAddr, PGSIZE, 
-        (uint)shmtable.pages[pgidx].physicalAddr, PTE_W | PTE_U) < 0) {
+    if (mappages(proc->pgdir, vaddr, PGSIZE, (uint)shmtable.pages[pgidx].physicalAddr,
+                 PTE_W | PTE_U) < 0) {
+        cprintf("err\n");
+    }
 
-            cprintf("err\n");
-        }
-    
+    proc->sz += size;
+    shmtable.pages[pgidx].n_access++;
     release(&shmtable.lock);
-    cprintf("created\n");
-    return shmtable.pages[pgidx].virtualAddr - size;
+    return vaddr;
 }
