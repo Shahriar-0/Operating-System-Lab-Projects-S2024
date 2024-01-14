@@ -126,6 +126,7 @@ extern int sys_openshmem(void);
 extern int sys_closeshmem(void);
 
 static int (*syscalls[])(void) = {
+    // clang-format off
     [SYS_fork]       sys_fork,
     [SYS_exit]       sys_exit,
     [SYS_wait]       sys_wait,
@@ -161,6 +162,7 @@ static int (*syscalls[])(void) = {
     [SYS_nsyscalls]  sys_nsyscalls,
     [SYS_openshmem]  sys_openshmem,
     [SYS_closeshmem] sys_closeshmem,
+    // clang-format on
 };
 
 void syscall(void) {

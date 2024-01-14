@@ -425,7 +425,7 @@ char* openshmem(int id) {
     char* vaddr = (char*)PGROUNDUP(proc->sz);
     shmemtable.pages[pgidx].physicalAddr = (uint)V2P(paddr);
 
-    if (mappages(proc->pgdir, vaddr, PGSIZE, shmemtable.pages[pgidx].physicalAddr, PTE_W | PTE_U) < 0) 
+    if (mappages(proc->pgdir, vaddr, PGSIZE, shmemtable.pages[pgidx].physicalAddr, PTE_W | PTE_U) < 0)
         return -1;
 
     shmemtable.pages[pgidx].n_access++;
@@ -449,7 +449,7 @@ int closeshmem(int id) {
             pte_t* pte = walkpgdir(proc->pgdir, (char*)a, 0);
             *pte = 0;
 
-            if (shmemtable.pages[i].n_access == 0) 
+            if (shmemtable.pages[i].n_access == 0)
                 shmemtable.pages[i].id = 0;
 
             release(&shmemtable.lock);
