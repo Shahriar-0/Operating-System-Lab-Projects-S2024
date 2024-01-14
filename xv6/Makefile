@@ -191,7 +191,7 @@ UPROGS=\
 	_foo\
 	_prio\
 	_ns\
-	_shm_test\
+	_shmem_test\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)

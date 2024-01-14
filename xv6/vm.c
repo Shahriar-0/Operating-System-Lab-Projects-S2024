@@ -368,99 +368,96 @@ int copyout(pde_t* pgdir, uint va, void* p, uint len) {
 
 // shared memory
 #define NSHPAGE   64
-#define HEAPLIMIT 0x7F000000
+#define HEAPLIMIT 0x7F000000 // 2GB - 128MB
 struct shpage {
     int id;
     int n_access;
     uint physicalAddr;
 };
 
-struct shmtable {
+struct shmemtable {
     struct shpage pages[NSHPAGE];
     struct spinlock lock;
 
-} shmtable;
+} shmemtable;
 
 char* openshmem(int id) {
     struct proc* proc = myproc();
-    acquire(&shmtable.lock);
+    acquire(&shmemtable.lock);
     int size = PGSIZE;
 
     for (int i = 0; i < NSHPAGE; i++) {
-        if (shmtable.pages[i].id == id) {
-            shmtable.pages[i].n_access++;
+        if (shmemtable.pages[i].id == id) {
+            shmemtable.pages[i].n_access++;
             char* vaddr = (char*)PGROUNDUP(proc->sz);
-            if (mappages(proc->pgdir, vaddr, PGSIZE, shmtable.pages[i].physicalAddr,
-                         PTE_W | PTE_U) < 0) {
-                cprintf("err\n");
-            }
-            proc->shmAddr = (uint)vaddr;
+            if (mappages(proc->pgdir, vaddr, PGSIZE, shmemtable.pages[i].physicalAddr, PTE_W | PTE_U) < 0)
+                return -1;
+            proc->shmemaddr = (uint)vaddr;
             proc->sz += size;
-            release(&shmtable.lock);
-            cprintf("passed\n");
+            release(&shmemtable.lock);
             return vaddr;
         }
     }
 
     int pgidx = -1;
     for (int i = 0; i < NSHPAGE; i++) {
-        if (shmtable.pages[i].id == 0) {
-            shmtable.pages[i].id = id;
+        if (shmemtable.pages[i].id == 0) {
+            shmemtable.pages[i].id = id;
             pgidx = i;
             break;
         }
     }
+
     if (pgidx == -1) {
-        cprintf("shmget: pages are full\n");
-        release(&shmtable.lock);
-        return 0;
+        cprintf("shared memory: pages are full\n");
+        release(&shmemtable.lock);
+        return -1;
     }
 
     char* paddr = kalloc();
     if (paddr == 0) {
-        cprintf("shmget: out of memory\n");
-        release(&shmtable.lock);
-        return 0;
+        cprintf("shared memory: out of memory\n");
+        release(&shmemtable.lock);
+        return -1;
     }
 
     memset(paddr, 0, PGSIZE);
     char* vaddr = (char*)PGROUNDUP(proc->sz);
-    shmtable.pages[pgidx].physicalAddr = (uint)V2P(paddr);
-    if (mappages(proc->pgdir, vaddr, PGSIZE, shmtable.pages[pgidx].physicalAddr,
-                 PTE_W | PTE_U) < 0) {
-        cprintf("err\n");
-    }
+    shmemtable.pages[pgidx].physicalAddr = (uint)V2P(paddr);
 
-    shmtable.pages[pgidx].n_access++;
-    proc->shmAddr = (uint)vaddr;
+    if (mappages(proc->pgdir, vaddr, PGSIZE, shmemtable.pages[pgidx].physicalAddr, PTE_W | PTE_U) < 0) 
+        return -1;
+
+    shmemtable.pages[pgidx].n_access++;
+    proc->shmemaddr = (uint)vaddr;
     proc->sz += size;
 
-    release(&shmtable.lock);
+    release(&shmemtable.lock);
     return vaddr;
 }
-
 
 int closeshmem(int id) {
     struct proc* proc = myproc();
     int size = PGSIZE;
-    acquire(&shmtable.lock);
+    acquire(&shmemtable.lock);
 
     for (int i = 0; i < NSHPAGE; i++) {
-        if (shmtable.pages[i].id == id) {
-            shmtable.pages[i].n_access--;
-            
-            uint a = (uint)PGROUNDUP(proc->shmAddr);
-            pte_t *pte = walkpgdir(proc->pgdir, (char*)a, 0);
+        if (shmemtable.pages[i].id == id) {
+            shmemtable.pages[i].n_access--;
+
+            uint a = (uint)PGROUNDUP(proc->shmemaddr);
+            pte_t* pte = walkpgdir(proc->pgdir, (char*)a, 0);
             *pte = 0;
-            
-            if(shmtable.pages[i].n_access == 0) {
-                shmtable.pages[i].id = 0;
-            }
-            release(&shmtable.lock);
+
+            if (shmemtable.pages[i].n_access == 0) 
+                shmemtable.pages[i].id = 0;
+
+            release(&shmemtable.lock);
             return 0;
         }
     }
-    release(&shmtable.lock);
-    cprintf("there is no shared-memory with this ID.\n");
+
+    release(&shmemtable.lock);
+    cprintf("No shared memory with this ID.\n");
     return -1;
 }

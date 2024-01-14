@@ -142,20 +142,16 @@ int sys_nsyscalls(void) {
 
 char* sys_openshmem(void) {
     int id;
-    if (argint(0, &id) < 0) {
-        cprintf("err\n");
-        return 0;
-    }
+    if (argint(0, &id) < 0) 
+        return -1; // error but we don't have equivalent in char*
 
     return openshmem(id);
 }
 
 int sys_closeshmem(void) {
     int id;
-    if (argint(0, &id) < 0) {
-        cprintf("err\n");
-        return 0;
-    }
+    if (argint(0, &id) < 0)
+        return -1;
 
     return closeshmem(id);
 }

@@ -96,7 +96,7 @@ struct proc {
     char name[16];              // Process name (debugging)
     uint ctime;                 // created time
     struct schedparams sched;   // scheduling parameters
-    uint shmAddr;               // address of shared-memory
+    uint shmemaddr;             // address of shared-memory
 };
 
 // Process memory is laid out contiguously, low addresses first:
