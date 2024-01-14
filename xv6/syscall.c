@@ -123,6 +123,7 @@ extern int sys_prelease(void);
 extern int sys_pqueue(void);
 extern int sys_nsyscalls(void);
 extern int sys_openshmem(void);
+extern int sys_closeshmem(void);
 
 static int (*syscalls[])(void) = {
     [SYS_fork] sys_fork,
@@ -159,6 +160,7 @@ static int (*syscalls[])(void) = {
     [SYS_pqueue] sys_pqueue,
     [SYS_nsyscalls] sys_nsyscalls,
     [SYS_openshmem] sys_openshmem,
+    [SYS_closeshmem] sys_closeshmem,
 };
 
 void syscall(void) {

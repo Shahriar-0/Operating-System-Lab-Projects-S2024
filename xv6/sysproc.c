@@ -149,3 +149,13 @@ char* sys_openshmem(void) {
 
     return openshmem(id);
 }
+
+int sys_closeshmem(void) {
+    int id;
+    if (argint(0, &id) < 0) {
+        cprintf("err\n");
+        return 0;
+    }
+
+    return closeshmem(id);
+}

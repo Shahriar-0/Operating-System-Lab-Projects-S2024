@@ -36,6 +36,7 @@ int prelease(void);
 int pqueue(void);
 int nsyscalls(void);
 char* openshmem(int);
+int closeshmem(int);
 
 typedef unsigned int uint; // i dunno but it doesn't compile without this
 // ulib.c

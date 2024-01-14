@@ -394,6 +394,7 @@ char* openshmem(int id) {
                          PTE_W | PTE_U) < 0) {
                 cprintf("err\n");
             }
+            proc->shmAddr = (uint)vaddr;
             proc->sz += size;
             release(&shmtable.lock);
             cprintf("passed\n");
@@ -430,8 +431,36 @@ char* openshmem(int id) {
         cprintf("err\n");
     }
 
-    proc->sz += size;
     shmtable.pages[pgidx].n_access++;
+    proc->shmAddr = (uint)vaddr;
+    proc->sz += size;
+
     release(&shmtable.lock);
     return vaddr;
+}
+
+
+int closeshmem(int id) {
+    struct proc* proc = myproc();
+    int size = PGSIZE;
+    acquire(&shmtable.lock);
+
+    for (int i = 0; i < NSHPAGE; i++) {
+        if (shmtable.pages[i].id == id) {
+            shmtable.pages[i].n_access--;
+            
+            uint a = (uint)PGROUNDUP(proc->shmAddr);
+            pte_t *pte = walkpgdir(proc->pgdir, (char*)a, 0);
+            *pte = 0;
+            
+            if(shmtable.pages[i].n_access == 0) {
+                shmtable.pages[i].id = 0;
+            }
+            release(&shmtable.lock);
+            return 0;
+        }
+    }
+    release(&shmtable.lock);
+    cprintf("there is no shared-memory with this ID.\n");
+    return -1;
 }
